@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - Acadify{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="user-info">
+                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                <div class="user-role">Student - {{ user.department }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Student ID: {{ user.student_id }}<br>
+                    Year {{ user.year_level }} - Semester {{ user.semester }}
+                </div>
+            </div>
+        </div>
+        
+        <nav>
+            <ul class="sidebar-nav">
+                <li class="sidebar-nav-item">
+                    <a href="#overview" class="sidebar-nav-link active">
+                        📊 Overview
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#grades" class="sidebar-nav-link">
+                        📝 My Grades
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#deans-list" class="sidebar-nav-link">
+                        🏆 Dean's List Status
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#academic-progress" class="sidebar-nav-link">
+                        📈 Academic Progress
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#transcript" class="sidebar-nav-link">
+                        📋 Transcript Request
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content fade-in">
+        <div class="container">
+            <h1 style="color: var(--text-primary); margin-bottom: 2rem;">Student Dashboard</h1>
+
+            <!-- Overview Cards -->
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="color: var(--primary-color); font-size: 2rem; margin-bottom: 0.5rem;">{{ grades|length }}</h3>
+                        <p style="color: var(--text-secondary);">Enrolled Subjects</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="color: {{ 'var(--success-color)' if deans_list_eligible else 'var(--text-secondary)' }}; font-size: 2rem; margin-bottom: 0.5rem;">
+                            {{ "%.2f"|format(gwa) if gwa else "N/A" }}
+                        </h3>
+                        <p style="color: var(--text-secondary)">General Weighted Average</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="color: {{ 'var(--success-color)' if deans_list_eligible else 'var(--warning-color)' }}; font-size: 2rem; margin-bottom: 0.5rem;">
+                            {{ total_units }}
+                        </h3>
+                        <p style="color: var(--text-secondary)">Total Units</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dean's List Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title">🏆 Dean's List Eligibility</h2>
+                    <p class="card-subtitle">Current semester academic standing</p>
+                </div>
+                <div class="card-body">
+                    {% if deans_list_eligible %}
+                        <div class="alert alert-success">
+                            <strong>Congratulations!</strong> You are eligible for the Dean's List this semester.
+                            <br>Your GWA of {{ "%.2f"|format(gwa) }} meets all qualification criteria.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <strong>Dean's List Requirements:</strong>
+                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                                <li>General Weighted Average of 1.75 or better</li>
+                                <li>No failing grades (5.00) in any subject</li>
+                                <li>No grade lower than 2.00</li>
+                                <li>Regular student with 18 units and above</li>
+                                <li>No incomplete (INC) or withdrawal (AW/UW) marks</li>
+                            </ul>
+                            {% if gwa %}
+                            <p style="margin-top: 1rem;"><strong>Your current GWA:</strong> {{ "%.2f"|format(gwa) }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Current Grades -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📝 Current Semester Grades</h2>
+                    <p class="card-subtitle">Academic Year 2024-2025, Semester 1</p>
+                </div>
+                <div class="card-body">
+                    {% if grades %}
+                        <div style="overflow-x: auto;">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject Code</th>
+                                        <th>Subject Name</th>
+                                        <th>Units</th>
+                                        <th>Prelim</th>
+                                        <th>Midterm</th>
+                                        <th>Final</th>
+                                        <th>Average</th>
+                                        <th>Grade Point</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for grade in grades %}
+                                    <tr>
+                                        <td style="font-weight: 600;">{{ grade.subject.subject_code if grade.subject else 'N/A' }}</td>
+                                        <td>{{ grade.subject.subject_name if grade.subject else 'Subject Name' }}</td>
+                                        <td>{{ grade.subject.units if grade.subject else '3' }}</td>
+                                        <td>{{ grade.prelim_grade or '-' }}</td>
+                                        <td>{{ grade.midterm_grade or '-' }}</td>
+                                        <td>{{ grade.final_grade or '-' }}</td>
+                                        <td style="font-weight: 600;">{{ grade.final_average or '-' }}</td>
+                                        <td>
+                                            {% if grade.equivalent_grade %}
+                                                <span class="badge {{ 'badge-success' if grade.equivalent_grade <= 1.75 else 'badge-warning' if grade.equivalent_grade <= 3.00 else 'badge-danger' }}">
+                                                    {{ "%.2f"|format(grade.equivalent_grade) }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-info">TBD</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if grade.remarks %}
+                                                <span class="badge {{ 'badge-success' if grade.remarks in ['Excellent', 'Outstanding', 'Superior'] else 'badge-warning' if grade.remarks != 'Failed' else 'badge-danger' }}">
+                                                    {{ grade.remarks }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center" style="padding: 2rem;">
+                            <p style="color: var(--text-secondary); font-size: 1.125rem;">No grades available for this semester yet.</p>
+                            <p style="color: var(--text-muted); margin-top: 0.5rem;">Grades will appear here once your instructors submit them.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Academic Progress Chart Placeholder -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h2 class="card-title">📈 Academic Progress Tracking</h2>
+                    <p class="card-subtitle">Semester-by-semester performance overview</p>
+                </div>
+                <div class="card-body">
+                    <div style="text-align: center; padding: 3rem; background-color: var(--bg-tertiary); border-radius: 0.5rem;">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">📊 Progress Chart</h3>
+                        <p style="color: var(--text-muted);">Academic progress visualization will be displayed here.</p>
+                        <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 1rem;">
+                            Track your GWA trends, unit completion, and semester performance.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

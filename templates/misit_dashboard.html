@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}MIS/IT Dashboard - Acadify{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="user-info">
+                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                <div class="user-role">MIS/IT Administrator</div>
+            </div>
+        </div>
+        
+        <nav>
+            <ul class="sidebar-nav">
+                <li class="sidebar-nav-item">
+                    <a href="#overview" class="sidebar-nav-link active">📊 System Overview</a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#users" class="sidebar-nav-link">👥 User Management</a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#security" class="sidebar-nav-link">🔒 Security</a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#logs" class="sidebar-nav-link">📋 System Logs</a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#backup" class="sidebar-nav-link">💾 Backup</a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content fade-in">
+        <div class="container">
+            <h1 style="color: var(--text-primary); margin-bottom: 2rem;">MIS/IT Dashboard</h1>
+
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="color: var(--primary-color); font-size: 2rem;">{{ total_users }}</h3>
+                        <p style="color: var(--text-secondary)">Total Users</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="color: var(--success-color); font-size: 2rem;">{{ total_students }}</h3>
+                        <p style="color: var(--text-secondary)">Students</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="color: var(--info-color); font-size: 2rem;">{{ total_instructors }}</h3>
+                        <p style="color: var(--text-secondary)">Instructors</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title">🖥️ System Health Status</h2>
+                    <p class="card-subtitle">Real-time system monitoring</p>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div style="padding: 1rem; background-color: var(--bg-tertiary); border-radius: 0.5rem;">
+                            <h4 style="color: var(--success-color); margin-bottom: 0.5rem;">✅ Database Connection</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">MySQL server is running normally</p>
+                        </div>
+                        <div style="padding: 1rem; background-color: var(--bg-tertiary); border-radius: 0.5rem;">
+                            <h4 style="color: var(--success-color); margin-bottom: 0.5rem;">✅ Application Server</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">Flask application is responsive</p>
+                        </div>
+                        <div style="padding: 1rem; background-color: var(--bg-tertiary); border-radius: 0.5rem;">
+                            <h4 style="color: var(--warning-color); margin-bottom: 0.5rem;">⚠️ Grade Encoding</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">Currently scheduled: Dec 1-15, 2024</p>
+                        </div>
+                        <div style="padding: 1rem; background-color: var(--bg-tertiary); border-radius: 0.5rem;">
+                            <h4 style="color: var(--info-color); margin-bottom: 0.5rem;">ℹ️ Last Backup</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">December 22, 2024 - 11:45 PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">⚡ Quick Administrative Actions</h2>
+                    <p class="card-subtitle">Common system administration tasks</p>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="btn btn-primary" style="padding: 1rem; justify-content: flex-start;">
+                            👤 Create New User Account
+                        </button>
+                        <button class="btn btn-secondary" style="padding: 1rem; justify-content: flex-start;">
+                            🔄 Reset User Password
+                        </button>
+                        <button class="btn btn-warning" style="padding: 1rem; justify-content: flex-start;">
+                            📅 Set Grade Encoding Schedule
+                        </button>
+                        <button class="btn btn-info" style="padding: 1rem; justify-content: flex-start;">
+                            💾 Backup Database
+                        </button>
+                        <button class="btn btn-secondary" style="padding: 1rem; justify-content: flex-start;">
+                            📊 Generate System Report
+                        </button>
+                        <button class="btn btn-secondary" style="padding: 1rem; justify-content: flex-start;">
+                            🔍 View Audit Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -21,8 +21,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
 db = SQLAlchemy(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'  # type: ignore
 login_manager.login_message = 'Please log in to access this page.'
 
 # =====================================
@@ -42,7 +43,7 @@ class User(UserMixin, db.Model):
     student_id = db.Column(db.String(20), unique=True, nullable=True)
     year_level = db.Column(db.Integer, nullable=True)
     semester = db.Column(db.Integer, nullable=True)
-    is_active = db.Column(db.Boolean, default=True)
+    active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def set_password(self, password):
@@ -404,7 +405,8 @@ def misit_dashboard():
 @login_required
 def toggle_theme():
     """Toggle between dark and light theme"""
-    theme = request.json.get('theme', 'light')
+    data = request.get_json() or {}
+    theme = data.get('theme', 'light')
     session['theme'] = theme
     return jsonify({'status': 'success', 'theme': theme})
 
