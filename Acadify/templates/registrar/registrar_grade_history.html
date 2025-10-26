@@ -1,0 +1,863 @@
+{% extends "common/base.html" %}
+
+{% block title %}Grade History - Acadify{% endblock %}
+
+{% block content %}
+<section class="min-h-screen py-8 bg-base-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" x2="8" y1="13" y2="13"/>
+                        <line x1="16" x2="8" y1="17" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-base-content tracking-tight">Grade History</h1>
+                    <p class="text-base-content/60 mt-1">Import and manage grades from previous semesters</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total Historical Grades -->
+            <div class="stats shadow">
+                <div class="stat">
+                    <div class="stat-figure text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Historical Grades</div>
+                    <div class="stat-value text-primary">{{ historical_grades_count or 0 }}</div>
+                    <div class="stat-desc">Total imported grades</div>
+                </div>
+            </div>
+
+            <!-- Excel Imports -->
+            <div class="stats shadow">
+                <div class="stat">
+                    <div class="stat-figure text-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Excel Imports</div>
+                    <div class="stat-value text-secondary">{{ csv_imports_count or 0 }}</div>
+                    <div class="stat-desc">Bulk imports completed</div>
+                </div>
+            </div>
+
+            <!-- Manual Entries -->
+            <div class="stats shadow">
+                <div class="stat">
+                    <div class="stat-figure text-accent">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Manual Entries</div>
+                    <div class="stat-value text-accent">{{ manual_entries_count or 0 }}</div>
+                    <div class="stat-desc">Individual entries</div>
+                </div>
+            </div>
+
+            <!-- Academic Years -->
+            <div class="stats shadow">
+                <div class="stat">
+                    <div class="stat-figure text-info">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Academic Years</div>
+                    <div class="stat-value text-info">{{ academic_years_count or 0 }}</div>
+                    <div class="stat-desc">Years covered</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Excel Import Section -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-primary/10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="card-title">Excel Import</h2>
+                            <p class="text-sm opacity-60">Bulk import grades from Excel files</p>
+                        </div>
+                    </div>
+
+                    <div class="form-control mb-4">
+                        <label class="label">
+                            <span class="label-text font-medium">Select Excel File</span>
+                        </label>
+                        <div class="join w-full">
+                            <input type="file" 
+                                   class="file-input file-input-bordered join-item flex-1" 
+                                   accept=".xlsx,.csv" 
+                                   id="historicalGradesFile">
+                            <button class="btn btn-primary join-item" onclick="importHistoricalGrades()">
+                                Import
+                            </button>
+                        </div>
+                        <div class="label">
+                            <span class="label-text-alt">Excel (.xlsx) and CSV files supported</span>
+                        </div>
+                    </div>
+
+                    <div class="divider">OR</div>
+
+                    <div class="text-center">
+                        <button class="btn btn-outline gap-2" onclick="downloadTemplate()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Template
+                        </button>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="alert alert-info mt-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-lg">Excel Format</h4>
+                            <p class="text-sm mt-1">
+                                <strong>Required:</strong> student_id, subject_code, semester, academic_year<br>
+                                <strong>Optional:</strong> prelim_grade, midterm_grade, final_grade
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Entry Section -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-secondary/10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="card-title">Manual Entry</h2>
+                            <p class="text-sm opacity-60">Enter grades individually</p>
+                        </div>
+                    </div>
+
+                    <div class="form-control mb-4">
+                        <label class="label">
+                            <span class="label-text font-medium">Academic Year</span>
+                        </label>
+                        <select class="select select-bordered w-full" id="manualAcademicYear">
+                            <option value="">Select Academic Year</option>
+                            <option value="2023-2024">2023-2024</option>
+                            <option value="2022-2023">2022-2023</option>
+                            <option value="2021-2022">2021-2022</option>
+                            <option value="2020-2021">2020-2021</option>
+                            <option value="2019-2020">2019-2020</option>
+                        </select>
+                    </div>
+
+                    <div class="form-control mb-6">
+                        <label class="label">
+                            <span class="label-text font-medium">Semester</span>
+                        </label>
+                        <select class="select select-bordered w-full" id="manualSemester">
+                            <option value="1">1st Semester</option>
+                            <option value="2">2nd Semester</option>
+                        </select>
+                    </div>
+
+                    <div class="text-center">
+                        <button class="btn btn-secondary gap-2" onclick="openGradeEntryModal()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Open Grade Entry
+                        </button>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="stats stats-vertical mt-6">
+                        <div class="stat">
+                            <div class="stat-title">Recent Activity</div>
+                            <div class="stat-value text-sm">{{ recent_entries or 0 }}</div>
+                            <div class="stat-desc">Entries this week</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Imports Table -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-info/10 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3h18v18H3zM21 9H3"/>
+                            <path d="M9 9h12v12H9z"/>
+                        </svg>
+                    </div>
+                        <div>
+                            <h2 class="card-title">Recent Import History</h2>
+                            <p class="text-sm opacity-60">Track your recent grade imports</p>
+                        </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                        <thead>
+                            <tr class="bg-base-200">
+                                <th>Date</th>
+                                <th>Academic Year</th>
+                                <th>Semester</th>
+                                <th>Source</th>
+                                <th>Records</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_imports %}
+                                {% for import_record in recent_imports %}
+                                <tr class="hover">
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                                <line x1="3" y1="10" x2="21" y2="10"/>
+                                            </svg>
+                                            {{ import_record.date.strftime('%Y-%m-%d') if import_record.date else 'N/A' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-outline">
+                                            {{ import_record.academic_year or 'N/A' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm font-medium">
+                                            {{ import_record.semester or 'N/A' }}{% if import_record.semester == 1 %}st{% elif import_record.semester == 2 %}nd{% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            {% if import_record.source == 'Excel Import' %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                    <polyline points="7 10 12 15 17 10"/>
+                                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                                </svg>
+                                                <span class="text-sm">Excel</span>
+                                            {% elif import_record.source == 'CSV Import' %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                    <polyline points="7 10 12 15 17 10"/>
+                                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                                </svg>
+                                                <span class="text-sm">CSV</span>
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                </svg>
+                                                <span class="text-sm">Manual</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm font-medium">
+                                            {{ import_record.records_count or 0 }} grades
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-success">
+                                            Completed
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-ghost btn-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                            </svg>
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-12">
+                                        <div class="p-4 bg-base-200 rounded-full w-fit mx-auto mb-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                <polyline points="14 2 14 8 20 8"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-xl font-bold mb-2">No Import History</h3>
+                                        <p class="opacity-60">Start by importing some historical grades to see your activity here.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Grade Entry Modal -->
+<div id="gradeEntryModal" class="modal">
+    <div class="modal-box w-11/12 max-w-7xl">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-secondary/10 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold">Manual Grade Entry</h3>
+                    <p class="text-sm opacity-60" id="modalAcademicYearText">Select academic year and semester</p>
+                </div>
+            </div>
+            <button class="btn btn-sm btn-circle btn-ghost" onclick="closeGradeEntryModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="modalLoadingState" class="text-center py-12">
+            <div class="loading loading-spinner loading-lg"></div>
+            <p class="mt-4 text-base-content/60">Loading students and subjects...</p>
+        </div>
+
+        <!-- Grade Entry Form -->
+        <div id="modalGradeEntryForm" class="hidden">
+            <!-- Student and Subject Selection -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Select Student</span>
+                    </label>
+                    <select class="select select-bordered w-full" id="modalStudentSelect">
+                        <option value="">Choose student...</option>
+                    </select>
+                </div>
+                
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Select Subject</span>
+                    </label>
+                    <select class="select select-bordered w-full" id="modalSubjectSelect">
+                        <option value="">Choose subject...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grade Input Form -->
+            <div id="gradeInputForm" class="hidden">
+                <div class="card bg-base-200">
+                    <div class="card-body">
+                        <h4 class="card-title text-lg mb-4">Enter Grades</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text font-medium">Prelim Grade</span>
+                                </label>
+                                <input type="number" 
+                                       class="input input-bordered grade-input" 
+                                       id="prelimGrade" 
+                                       min="0" 
+                                       max="100" 
+                                       step="0.01" 
+                                       placeholder="0.00">
+                            </div>
+                            
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text font-medium">Midterm Grade</span>
+                                </label>
+                                <input type="number" 
+                                       class="input input-bordered grade-input" 
+                                       id="midtermGrade" 
+                                       min="0" 
+                                       max="100" 
+                                       step="0.01" 
+                                       placeholder="0.00">
+                            </div>
+                            
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text font-medium">Final Grade</span>
+                                </label>
+                                <input type="number" 
+                                       class="input input-bordered grade-input" 
+                                       id="finalGrade" 
+                                       min="0" 
+                                       max="100" 
+                                       step="0.01" 
+                                       placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <!-- Calculated Results -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="stat bg-base-100 rounded-lg">
+                                <div class="stat-title">Final Average</div>
+                                <div class="stat-value text-lg" id="calculatedFinalAverage">—</div>
+                            </div>
+                            
+                            <div class="stat bg-base-100 rounded-lg">
+                                <div class="stat-title">Equivalent Grade</div>
+                                <div class="stat-value text-lg" id="calculatedEquivalentGrade">—</div>
+                            </div>
+                            
+                            <div class="stat bg-base-100 rounded-lg">
+                                <div class="stat-title">Remarks</div>
+                                <div class="stat-value text-lg" id="calculatedRemarks">—</div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-4 justify-end">
+                            <button class="btn btn-ghost" onclick="clearGradeForm()">Clear</button>
+                            <button class="btn btn-primary" onclick="saveGradeEntry()" id="saveGradeBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                    <polyline points="17,21 17,13 7,13 7,21"/>
+                                    <polyline points="7,3 7,8 15,8"/>
+                                </svg>
+                                Save Grade
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="modalErrorState" class="hidden text-center py-12">
+            <div class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                <div>
+                    <h3 class="font-bold">Error Loading Data</h3>
+                    <div class="text-xs" id="modalErrorMessage">Unable to load students and subjects for the selected academic year and semester.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop" onclick="closeGradeEntryModal()"></div>
+</div>
+
+<script>
+// Historical Grade Management Functions
+function importHistoricalGrades() {
+    const fileInput = document.getElementById('historicalGradesFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select an Excel or CSV file');
+        return;
+    }
+    
+    const fileExtension = file.name.toLowerCase().split('.').pop();
+    if (!['xlsx', 'csv'].includes(fileExtension)) {
+        alert('Please select an Excel (.xlsx) or CSV file');
+        return;
+    }
+    
+    // Show loading state
+    const button = document.querySelector('button[onclick="importHistoricalGrades()"]');
+    const originalText = button.innerHTML;
+    button.innerHTML = 'Importing...';
+    button.disabled = true;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    fetch('/api/import-historical-grades', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            let message = data.message;
+            if (data.error_details && data.error_details.length > 0) {
+                message += '\n\nError details:\n' + data.error_details.join('\n');
+            }
+            if (data.total_rows) {
+                message += `\n\nTotal rows processed: ${data.total_rows}`;
+            }
+            alert(message);
+            // Clear file input
+            fileInput.value = '';
+            // Reload page to show updated data
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Upload failed: ' + error.message);
+    })
+    .finally(() => {
+        // Reset button state
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function downloadTemplate() {
+    const academicYear = document.getElementById('manualAcademicYear').value || '2023-2024';
+    
+    // Show loading state
+    const button = document.querySelector('button[onclick="downloadTemplate()"]');
+    const originalText = button.innerHTML;
+    button.innerHTML = 'Downloading...';
+    button.disabled = true;
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.href = `/api/download-grade-template?academic_year=${academicYear}`;
+    link.download = `grade_template_${academicYear}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Reset button state
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }, 1000);
+}
+
+// Modal Management Functions
+function openGradeEntryModal() {
+    const academicYear = document.getElementById('manualAcademicYear').value;
+    const semester = document.getElementById('manualSemester').value;
+    
+    if (!academicYear) {
+        alert('Please select an academic year');
+        return;
+    }
+    
+    // Show modal
+    document.getElementById('gradeEntryModal').classList.add('modal-open');
+    
+    // Update modal title
+    document.getElementById('modalAcademicYearText').textContent = `${academicYear} - ${semester}${semester == 1 ? 'st' : 'nd'} Semester`;
+    
+    // Load data
+    loadModalData(academicYear, semester);
+}
+
+function closeGradeEntryModal() {
+    document.getElementById('gradeEntryModal').classList.remove('modal-open');
+    resetModalState();
+}
+
+function resetModalState() {
+    // Hide all states
+    document.getElementById('modalLoadingState').classList.remove('hidden');
+    document.getElementById('modalGradeEntryForm').classList.add('hidden');
+    document.getElementById('modalErrorState').classList.add('hidden');
+    document.getElementById('gradeInputForm').classList.add('hidden');
+    
+    // Clear form
+    clearGradeForm();
+    
+    // Clear selects
+    document.getElementById('modalStudentSelect').innerHTML = '<option value="">Choose student...</option>';
+    document.getElementById('modalSubjectSelect').innerHTML = '<option value="">Choose subject...</option>';
+}
+
+function loadModalData(academicYear, semester) {
+    // Show loading state
+    document.getElementById('modalLoadingState').classList.remove('hidden');
+    document.getElementById('modalGradeEntryForm').classList.add('hidden');
+    document.getElementById('modalErrorState').classList.add('hidden');
+    
+    // Fetch students and subjects
+    Promise.all([
+        fetch(`/api/get-students?academic_year=${academicYear}`).then(r => r.json()),
+        fetch(`/api/get-subjects?academic_year=${academicYear}&semester=${semester}`).then(r => r.json())
+    ])
+    .then(([studentsResponse, subjectsResponse]) => {
+        if (studentsResponse.status === 'success' && subjectsResponse.status === 'success') {
+            populateStudentSelect(studentsResponse.data);
+            populateSubjectSelect(subjectsResponse.data);
+            
+            // Show form
+            document.getElementById('modalLoadingState').classList.add('hidden');
+            document.getElementById('modalGradeEntryForm').classList.remove('hidden');
+        } else {
+            throw new Error('Failed to load data');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading modal data:', error);
+        document.getElementById('modalLoadingState').classList.add('hidden');
+        document.getElementById('modalErrorState').classList.remove('hidden');
+        document.getElementById('modalErrorMessage').textContent = error.message;
+    });
+}
+
+function populateStudentSelect(students) {
+    const select = document.getElementById('modalStudentSelect');
+    select.innerHTML = '<option value="">Choose student...</option>';
+    
+    students.forEach(student => {
+        const option = document.createElement('option');
+        option.value = student.id;
+        option.textContent = `${student.student_id || 'N/A'} - ${student.first_name} ${student.last_name}`;
+        select.appendChild(option);
+    });
+}
+
+function populateSubjectSelect(subjects) {
+    const select = document.getElementById('modalSubjectSelect');
+    select.innerHTML = '<option value="">Choose subject...</option>';
+    
+    subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject.id;
+        option.textContent = `${subject.subject_code} - ${subject.subject_name}`;
+        select.appendChild(option);
+    });
+}
+
+// Grade Entry Functions
+function onStudentOrSubjectChange() {
+    const studentId = document.getElementById('modalStudentSelect').value;
+    const subjectId = document.getElementById('modalSubjectSelect').value;
+    
+    if (studentId && subjectId) {
+        document.getElementById('gradeInputForm').classList.remove('hidden');
+        // Load existing grade if any
+        loadExistingGrade(studentId, subjectId);
+    } else {
+        document.getElementById('gradeInputForm').classList.add('hidden');
+    }
+}
+
+function loadExistingGrade(studentId, subjectId) {
+    const academicYear = document.getElementById('manualAcademicYear').value;
+    const semester = document.getElementById('manualSemester').value;
+    
+    fetch(`/api/get-grade?student_id=${studentId}&subject_id=${subjectId}&academic_year=${academicYear}&semester=${semester}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' && data.grade) {
+            const grade = data.grade;
+            document.getElementById('prelimGrade').value = grade.prelim_grade || '';
+            document.getElementById('midtermGrade').value = grade.midterm_grade || '';
+            document.getElementById('finalGrade').value = grade.final_grade || '';
+            calculateGrades();
+        }
+    })
+    .catch(error => {
+        console.log('No existing grade found or error:', error);
+        // Clear form if no existing grade
+        clearGradeForm();
+    });
+}
+
+function calculateGrades() {
+    const prelim = parseFloat(document.getElementById('prelimGrade').value) || 0;
+    const midterm = parseFloat(document.getElementById('midtermGrade').value) || 0;
+    const final = parseFloat(document.getElementById('finalGrade').value) || 0;
+    
+    let finalAverage = 0;
+    let equivalentGrade = 0;
+    let remarks = '';
+    
+    if (prelim > 0 && midterm > 0 && final > 0) {
+        finalAverage = (prelim + midterm + final) / 3;
+        
+        // Convert to equivalent grade (1.00-5.00 scale)
+        if (finalAverage >= 98) equivalentGrade = 1.00;
+        else if (finalAverage >= 95) equivalentGrade = 1.25;
+        else if (finalAverage >= 92) equivalentGrade = 1.50;
+        else if (finalAverage >= 89) equivalentGrade = 1.75;
+        else if (finalAverage >= 86) equivalentGrade = 2.00;
+        else if (finalAverage >= 83) equivalentGrade = 2.25;
+        else if (finalAverage >= 80) equivalentGrade = 2.50;
+        else if (finalAverage >= 76) equivalentGrade = 2.75;
+        else if (finalAverage >= 75) equivalentGrade = 3.00;
+        else equivalentGrade = 5.00;
+        
+        // Set remarks
+        if (equivalentGrade <= 3.00) {
+            remarks = 'Passed';
+        } else {
+            remarks = 'Failed';
+        }
+    }
+    
+    // Update display
+    document.getElementById('calculatedFinalAverage').textContent = finalAverage > 0 ? finalAverage.toFixed(2) : '—';
+    document.getElementById('calculatedEquivalentGrade').textContent = equivalentGrade > 0 ? equivalentGrade.toFixed(2) : '—';
+    document.getElementById('calculatedRemarks').textContent = remarks || '—';
+}
+
+function clearGradeForm() {
+    document.getElementById('prelimGrade').value = '';
+    document.getElementById('midtermGrade').value = '';
+    document.getElementById('finalGrade').value = '';
+    document.getElementById('calculatedFinalAverage').textContent = '—';
+    document.getElementById('calculatedEquivalentGrade').textContent = '—';
+    document.getElementById('calculatedRemarks').textContent = '—';
+}
+
+function saveGradeEntry() {
+    const studentId = document.getElementById('modalStudentSelect').value;
+    const subjectId = document.getElementById('modalSubjectSelect').value;
+    const academicYear = document.getElementById('manualAcademicYear').value;
+    const semester = document.getElementById('manualSemester').value;
+    
+    if (!studentId || !subjectId) {
+        alert('Please select both student and subject');
+        return;
+    }
+    
+    const prelim = document.getElementById('prelimGrade').value || null;
+    const midterm = document.getElementById('midtermGrade').value || null;
+    const final = document.getElementById('finalGrade').value || null;
+    
+    if (!prelim && !midterm && !final) {
+        alert('Please enter at least one grade');
+        return;
+    }
+    
+    // Show loading state
+    const saveBtn = document.getElementById('saveGradeBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Saving...';
+    saveBtn.disabled = true;
+    
+    const gradeData = {
+        student_id: studentId,
+        subject_id: subjectId,
+        semester: parseInt(semester),
+        academic_year: academicYear,
+        prelim_grade: prelim ? parseFloat(prelim) : null,
+        midterm_grade: midterm ? parseFloat(midterm) : null,
+        final_grade: final ? parseFloat(final) : null
+    };
+    
+    fetch('/api/save-historical-grade', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gradeData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Grade saved successfully!');
+            // Reload page to show updated data
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Save failed: ' + error.message);
+    })
+    .finally(() => {
+        // Reset button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    });
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // File input change handler
+    const fileInput = document.getElementById('historicalGradesFile');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                console.log('File selected:', file.name);
+            }
+        });
+    }
+    
+    // Modal select change handlers
+    const modalStudentSelect = document.getElementById('modalStudentSelect');
+    const modalSubjectSelect = document.getElementById('modalSubjectSelect');
+    
+    if (modalStudentSelect) {
+        modalStudentSelect.addEventListener('change', onStudentOrSubjectChange);
+    }
+    
+    if (modalSubjectSelect) {
+        modalSubjectSelect.addEventListener('change', onStudentOrSubjectChange);
+    }
+    
+    // Grade input change handlers
+    const gradeInputs = ['prelimGrade', 'midtermGrade', 'finalGrade'];
+    gradeInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('input', calculateGrades);
+        }
+    });
+});
+</script>
+{% endblock %}

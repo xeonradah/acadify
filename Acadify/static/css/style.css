@@ -1,0 +1,559 @@
+/* Acadify - Academic Record Management System Styles */
+
+/* ===== CSS VARIABLES FOR THEMES ===== */
+:root {
+  /* NC Brand Colors */
+  --nc-blue: #0047AB;
+  --nc-blue-dark: #003399;
+  --nc-blue-light: #0066FF;
+  
+  /* Theme Colors */
+  --primary-color: var(--nc-blue);
+  --secondary-color: var(--nc-blue-light);
+  --accent-color: #f59e0b;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #06b6d4;
+  
+  /* Light Theme Background & Text */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #e2e8f0;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+
+  /* Login Page Specific */
+  --login-overlay: linear-gradient(135deg, rgba(0,71,171,0.97) 0%, rgba(0,51,153,0.95) 100%);
+  --login-card-bg: rgba(255, 255, 255, 0.99);
+  
+  /* Borders and Shadows - Refined for natural appearance */
+  --border-color: #e2e8f0;
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-heavy: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Dark Theme - Only applied when explicitly chosen */
+[data-theme="dark"] {
+  --primary-color: #3b82f6;
+  --secondary-color: #60a5fa;
+  --accent-color: #fbbf24;
+  --success-color: #34d399;
+  --danger-color: #f87171;
+  --warning-color: #fbbf24;
+  --info-color: #38bdf8;
+  
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --icon-color: #f1f5f9;
+  
+  --border-color: #334155;
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+  --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.08);
+  --shadow-heavy: 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== RESET AND BASE STYLES ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Layout components handled by TailwindCSS + DaisyUI in base.html */
+
+/* Note: Login page now uses TailwindCSS + DaisyUI components directly */
+
+/* ===== FORMS ===== */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Password toggles handled by Alpine.js in login.html */
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-color);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Demo accounts removed - not needed in production */
+
+/* Dashboard layout handled by DaisyUI drawer component in base.html */
+
+/* ===== REFINED SHADOW UTILITIES ===== */
+.shadow-subtle {
+  box-shadow: var(--shadow-subtle);
+}
+
+.shadow-refined-light {
+  box-shadow: var(--shadow-light);
+}
+
+.shadow-refined-medium {
+  box-shadow: var(--shadow-medium);
+}
+
+.shadow-refined-heavy {
+  box-shadow: var(--shadow-heavy);
+}
+
+.shadow-refined-xl {
+  box-shadow: var(--shadow-xl);
+}
+
+/* Card shadows with refined appearance */
+.card-refined {
+  box-shadow: var(--shadow-light);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card-refined:hover {
+  box-shadow: var(--shadow-medium);
+}
+
+/* Button shadows */
+.btn-refined {
+  box-shadow: var(--shadow-subtle);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.btn-refined:hover {
+  box-shadow: var(--shadow-light);
+}
+
+.btn-refined:active {
+  box-shadow: var(--shadow-subtle);
+}
+
+/* Modal and dropdown shadows */
+.modal-refined {
+  box-shadow: var(--shadow-xl);
+}
+
+.dropdown-refined {
+  box-shadow: var(--shadow-heavy);
+}
+
+/* ===== CARDS ===== */
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-light);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-title {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.card-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* ===== TABLES ===== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table th {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.table td {
+  color: var(--text-secondary);
+}
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+.badge-success {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.badge-warning {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.badge-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.badge-info {
+  background-color: var(--info-color);
+  color: white;
+}
+
+/* ===== ALERTS ===== */
+.alert {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.alert-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--success-color);
+  color: var(--success-color);
+}
+
+.alert-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+}
+
+.alert-warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--warning-color);
+  color: var(--warning-color);
+}
+
+.alert-info {
+  background-color: rgba(6, 182, 212, 0.1);
+  border: 1px solid var(--info-color);
+  color: var(--info-color);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+/* Enhanced Responsive Design */
+@media (max-width: 1024px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    padding: 2rem;
+    margin: 1rem;
+  }
+  
+  /* Make tables scrollable on mobile */
+  .table-container,
+  .overflow-x-auto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Smaller text on mobile */
+  h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Extra small screens - compact spacing */
+  .py-8 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+  
+  .gap-6 {
+    gap: 1rem !important;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* ===== UTILITIES ===== */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.gap-4 { gap: 1rem; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+
+/* Global theme-aware color mappings for hardcoded colors */
+[data-theme="dark"] .bg-gray-50\/30,
+[data-theme="dark"] .bg-gray-50 {
+  background-color: hsl(var(--b2) / 0.5) !important;
+}
+
+[data-theme="dark"] .bg-white {
+  background-color: hsl(var(--b1)) !important;
+}
+
+[data-theme="dark"] .bg-blue-50 {
+  background-color: hsl(var(--p) / 0.1) !important;
+}
+
+[data-theme="dark"] .bg-green-50 {
+  background-color: hsl(var(--su) / 0.1) !important;
+}
+
+[data-theme="dark"] .bg-yellow-50 {
+  background-color: hsl(var(--wa) / 0.1) !important;
+}
+
+[data-theme="dark"] .bg-red-50 {
+  background-color: hsl(var(--er) / 0.1) !important;
+}
+
+[data-theme="dark"] .text-gray-900,
+[data-theme="dark"] .text-gray-800,
+[data-theme="dark"] .text-gray-700 {
+  color: hsl(var(--bc)) !important;
+}
+
+[data-theme="dark"] .text-gray-600,
+[data-theme="dark"] .text-gray-500 {
+  color: hsl(var(--bc) / 0.7) !important;
+}
+
+[data-theme="dark"] .text-gray-400 {
+  color: hsl(var(--bc) / 0.5) !important;
+}
+
+[data-theme="dark"] .text-blue-600,
+[data-theme="dark"] .text-blue-700,
+[data-theme="dark"] .text-blue-800 {
+  color: hsl(var(--p)) !important;
+}
+
+[data-theme="dark"] .text-green-600,
+[data-theme="dark"] .text-green-700,
+[data-theme="dark"] .text-green-800 {
+  color: hsl(var(--su)) !important;
+}
+
+[data-theme="dark"] .text-yellow-600,
+[data-theme="dark"] .text-yellow-700 {
+  color: hsl(var(--wa)) !important;
+}
+
+[data-theme="dark"] .text-red-600,
+[data-theme="dark"] .text-red-700 {
+  color: hsl(var(--er)) !important;
+}
+
+[data-theme="dark"] .border-gray-200,
+[data-theme="dark"] .border-gray-300 {
+  border-color: hsl(var(--bc) / 0.2) !important;
+}
+
+[data-theme="dark"] .border-blue-400,
+[data-theme="dark"] .border-blue-500 {
+  border-color: hsl(var(--p)) !important;
+}
+
+[data-theme="dark"] .hover\:bg-gray-50:hover,
+[data-theme="dark"] .hover\:bg-blue-50:hover {
+  background-color: hsl(var(--b2)) !important;
+}
+
+[data-theme="dark"] .hover\:bg-blue-100:hover {
+  background-color: hsl(var(--p) / 0.2) !important;
+}
+
+[data-theme="dark"] .hover\:text-gray-700:hover,
+[data-theme="dark"] .hover\:text-gray-800:hover {
+  color: hsl(var(--bc)) !important;
+}
+
+[data-theme="dark"] .hover\:text-blue-600:hover,
+[data-theme="dark"] .hover\:text-blue-700:hover,
+[data-theme="dark"] .hover\:text-blue-800:hover {
+  color: hsl(var(--p)) !important;
+}
+
+[data-theme="dark"] .hover\:border-blue-400:hover {
+  border-color: hsl(var(--p)) !important;
+}
+
+/* Button colors in dark mode */
+[data-theme="dark"] .bg-blue-600 {
+  background-color: hsl(var(--p)) !important;
+}
+
+[data-theme="dark"] .bg-blue-700,
+[data-theme="dark"] .hover\:bg-blue-700:hover {
+  background-color: hsl(var(--p) / 0.9) !important;
+}
+
+[data-theme="dark"] .bg-gray-100 {
+  background-color: hsl(var(--b3)) !important;
+}
+
+[data-theme="dark"] .bg-green-100 {
+  background-color: hsl(var(--su) / 0.2) !important;
+}
+
+[data-theme="dark"] .bg-yellow-100 {
+  background-color: hsl(var(--wa) / 0.2) !important;
+}
+
+[data-theme="dark"] .bg-red-100 {
+  background-color: hsl(var(--er) / 0.2) !important;
+}
+
+/* Badge and status colors */
+[data-theme="dark"] .bg-green-100.text-green-700,
+[data-theme="dark"] .bg-green-100.text-green-800 {
+  background-color: hsl(var(--su) / 0.2) !important;
+  color: hsl(var(--su)) !important;
+}
+
+[data-theme="dark"] .bg-blue-100.text-blue-700,
+[data-theme="dark"] .bg-blue-100.text-blue-800 {
+  background-color: hsl(var(--p) / 0.2) !important;
+  color: hsl(var(--p)) !important;
+}
+
+[data-theme="dark"] .bg-yellow-100.text-yellow-700,
+[data-theme="dark"] .bg-yellow-100.text-yellow-800 {
+  background-color: hsl(var(--wa) / 0.2) !important;
+  color: hsl(var(--wa)) !important;
+}
+
+[data-theme="dark"] .bg-red-100.text-red-800 {
+  background-color: hsl(var(--er) / 0.2) !important;
+  color: hsl(var(--er)) !important;
+}
+
+/* System preference detection removed - theme is now explicitly set via toggle in base.html */

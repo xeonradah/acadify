@@ -1,0 +1,1078 @@
+{% extends "common/base.html" %}
+
+{% block title %}Student Dashboard - Acadify{% endblock %}
+
+{% block content %}
+<!-- UI only — preserve all backend functionality, IDs, names, and HTMX endpoints -->
+<section class="min-h-screen py-8" 
+    x-data="{ 
+        showWelcome: sessionStorage.getItem('welcomeDismissed') !== 'true',
+        welcomeMessage: 'Welcome back to your academic journey!',
+        dismissWelcome() {
+            this.showWelcome = false;
+            sessionStorage.setItem('welcomeDismissed', 'true');
+        }
+    }"
+>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-refined-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-base-content tracking-tight">
+                            {% if view_only %}
+                                Student Record - View Only
+                            {% else %}
+                                Student Dashboard
+                            {% endif %}
+                        </h1>
+                        <p class="text-base-content/60 mt-1">
+                            {% if view_only %}
+                                Viewing {{ student.first_name }} {{ student.last_name }}'s academic record
+                            {% else %}
+                                Track your academic progress and performance
+                            {% endif %}
+                        </p>
+                        {% if view_only %}
+                        <div class="mt-2">
+                            <a href="{{ url_for('registrar_dashboard') }}" 
+                               class="btn btn-outline btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                                </svg>
+                                Back to Registrar Dashboard
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Welcome Alert -->
+            {% if not view_only %}
+            <div x-show="showWelcome" 
+                 x-cloak
+                 style="display: none;"
+                 x-transition 
+                 class="alert alert-info shadow-refined-light mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span x-text="welcomeMessage"></span>
+                <button @click="dismissWelcome()" class="btn btn-ghost btn-sm btn-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Enrolled Subjects Card -->
+            <div class="stats shadow-refined-light">
+                <div class="stat">
+                    <div class="stat-figure text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Enrolled Subjects</div>
+                    <div class="stat-value text-primary">{{ grades|length }}</div>
+                    <div class="stat-desc">This semester</div>
+                </div>
+            </div>
+            
+            <!-- GWA Card -->
+            <div class="stats shadow-refined-light">
+                <div class="stat">
+                    <div class="stat-figure {% if deans_list_eligible %}text-success{% else %}text-secondary{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                            <polyline points="16 7 22 7 22 13"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">General Weighted Average</div>
+                    <div class="stat-value {% if deans_list_eligible %}text-success{% else %}text-secondary{% endif %}">{{ "%.2f"|format(gwa) if gwa else "N/A" }}</div>
+                    <div class="stat-desc">{% if deans_list_eligible %}Dean's List Eligible{% else %}Academic subjects only{% endif %}</div>
+                </div>
+            </div>
+            
+            <!-- Current Academic Year Card -->
+            <div class="stats shadow-refined-light">
+                <div class="stat">
+                    <div class="stat-figure text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                            <line x1="16" x2="16" y1="2" y2="6"/>
+                            <line x1="8" x2="8" y1="2" y2="6"/>
+                            <line x1="3" x2="21" y1="10" y2="10"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Current Academic Year</div>
+                    <div class="stat-value text-primary">{{ latest_academic_year }}</div>
+                    <div class="stat-desc">{{ current_year_total_units }} units enrolled</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dean's List Status -->
+        <div class="card bg-base-100 shadow-refined-medium mb-8">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-warning/10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                <path d="M4 22h16"/>
+                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="card-title">Dean's List Eligibility</h2>
+                            <p class="text-sm opacity-60">
+                                {% if eligibility_semester == current_semester and eligibility_year == current_year %}
+                                    Current semester academic standing
+                                {% else %}
+                                    {{ eligibility_year }} - {{ eligibility_semester }}{% if eligibility_semester == 1 %}st{% else %}nd{% endif %} Semester standing
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('eligibilityModal').showModal()" class="btn btn-ghost btn-sm btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <path d="M12 17h.01"/>
+                        </svg>
+                    </button>
+                </div>
+
+                {% if deans_list_eligible %}
+                    <div class="card bg-gradient-to-br from-success/10 to-success/5 border-2 border-success/20 shadow-refined-medium">
+                        <div class="card-body p-6">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0">
+                                    <div class="p-3 bg-success/20 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <h3 class="text-xl font-bold text-success flex items-center gap-2">
+                                            Congratulations! 
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                                <path d="M4 22h16"/>
+                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                            </svg>
+                                        </h3>
+                                        <div class="badge badge-success badge-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                                <path d="M4 22h16"/>
+                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                            </svg>
+                                            Dean's List Eligible
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-3">
+                                        <div class="p-3 bg-base-100/50 rounded-lg border border-success/10">
+                                            <p class="text-sm font-medium text-base-content">
+                                                You are eligible for the Dean's List for 
+                                                <span class="font-bold text-success">{{ eligibility_year }} - {{ eligibility_semester }}{% if eligibility_semester == 1 %}st{% else %}nd{% endif %} Semester</span> 
+                                                with a GWA of 
+                                                <span class="font-bold text-success">{{ "%.2f"|format(gwa) }}</span> 
+                                                <span class="text-info">(Academic subjects only)</span>.
+                                            </p>
+                                        </div>
+                                        
+                                        <div class="flex flex-wrap gap-2">
+                            {% if eligibility_semester == current_semester and eligibility_year == current_year %}
+                                                <div class="badge badge-success badge-sm gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="20 6 9 17 4 12"/>
+                                                    </svg>
+                                                    Based on current semester
+                                                </div>
+                            {% else %}
+                                                <div class="badge badge-info badge-sm gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10"/>
+                                                        <line x1="12" x2="12" y1="8" y2="12"/>
+                                                        <line x1="12" x2="12.01" y1="16" y2="16"/>
+                                                    </svg>
+                                                    Based on last completed semester
+                                                </div>
+                            {% endif %}
+                                            
+                                            <div class="badge badge-info badge-sm gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <line x1="12" x2="12" y1="8" y2="12"/>
+                                                    <line x1="12" x2="12.01" y1="16" y2="16"/>
+                                                </svg>
+                                                Non-Academic subjects still required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card bg-gradient-to-br from-warning/10 to-warning/5 border-2 border-warning/20 shadow-refined-medium">
+                        <div class="card-body p-6">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0">
+                                    <div class="p-3 bg-warning/20 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <h3 class="text-xl font-bold text-warning">Dean's List Requirements Not Met</h3>
+                                        <div class="badge badge-warning badge-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                            </svg>
+                                            Not Eligible
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-3">
+                                        {% if gwa %}
+                                            <div class="p-3 bg-base-100/50 rounded-lg border border-warning/10">
+                                                <p class="text-sm font-medium text-base-content">
+                                                    Your GWA for 
+                                                    <span class="font-bold text-warning">{{ eligibility_year }} - {{ eligibility_semester }}{% if eligibility_semester == 1 %}st{% else %}nd{% endif %} Semester</span>: 
+                                                    <span class="font-bold text-warning">{{ "%.2f"|format(gwa) }}</span> 
+                                                    <span class="text-info">(Academic subjects only)</span>.
+                                                </p>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="p-3 bg-warning/10 rounded-lg border border-warning/20">
+                                            <p class="text-sm font-medium text-warning">{{ eligibility_reason }}</p>
+                                        </div>
+                                        
+                                        {% if "Insufficient units" in eligibility_reason %}
+                                            {% set total_units = grades | sum(attribute='subject.units') %}
+                                            {% set needed_units = 18 - total_units %}
+                                            <div class="p-3 bg-error/10 rounded-lg border border-error/20">
+                                                <p class="text-sm font-medium text-error">⚠️ You need {{ needed_units }} more total units to qualify for Dean's List</p>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="flex flex-wrap gap-2">
+                            {% if eligibility_semester == current_semester and eligibility_year == current_year %}
+                                                <div class="badge badge-success badge-sm gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="20 6 9 17 4 12"/>
+                                                    </svg>
+                                                    Based on current semester
+                                                </div>
+                            {% else %}
+                                                <div class="badge badge-info badge-sm gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10"/>
+                                                        <line x1="12" x2="12" y1="8" y2="12"/>
+                                                        <line x1="12" x2="12.01" y1="16" y2="16"/>
+                                                    </svg>
+                                                    Based on last completed semester
+                                                </div>
+                            {% endif %}
+                                            
+                                            <div class="badge badge-info badge-sm gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <line x1="12" x2="12" y1="8" y2="12"/>
+                                                    <line x1="12" x2="12.01" y1="16" y2="16"/>
+                                                </svg>
+                                                Non-Academic subjects still required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="card bg-base-200">
+                            <div class="card-body">
+                                <h4 class="card-title text-base">Academic Requirements</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        GWA of 1.75 or better (Academic subjects only)
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        No failing grades (5.00) in Academic subjects
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        No grade below 2.00 in Academic subjects
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        18+ total units enrolled
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="12" x2="12" y1="8" y2="12"/>
+                                            <line x1="12" x2="12.01" y1="16" y2="16"/>
+                                        </svg>
+                                        <span class="text-info font-medium">Non-Academic subjects are still required but don't affect GWA/Dean's List</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card bg-base-200">
+                            <div class="card-body">
+                                <h4 class="card-title text-base">Status Requirements</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Regular student status
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Block Section type
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        No INC/AW/UW marks
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Complete grade records (Academic subjects)
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="12" x2="12" y1="8" y2="12"/>
+                                            <line x1="12" x2="12.01" y1="16" y2="16"/>
+                                        </svg>
+                                        <span class="text-info font-medium">Non-Academic subjects still required for graduation</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Eligibility Help Modal -->
+        <dialog id="eligibilityModal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg mb-4">Dean's List Information</h3>
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="document.getElementById('eligibilityModal').close()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                
+                <div class="space-y-4">
+                    <p class="text-sm">The Dean's List is a recognition of academic excellence awarded to students who meet the following criteria:</p>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <p class="text-sm">Maintain a GWA of 1.75 or better (Academic subjects only)</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <p class="text-sm">No failing grades (5.00) in Academic subjects</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <p class="text-sm">No grade below 2.00 in Academic subjects</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <p class="text-sm">18+ total units enrolled</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" x2="12" y1="8" y2="12"/>
+                                <line x1="12" x2="12.01" y1="16" y2="16"/>
+                            </svg>
+                            <p class="text-sm font-medium text-info">Non-Academic subjects (PE, NSTP) are still required but don't affect GWA computation</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <p class="text-sm">Regular student with Block Section status</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <p class="text-sm">No INC/AW/UW marks</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" x2="12" y1="8" y2="12"/>
+                                <line x1="12" x2="12.01" y1="16" y2="16"/>
+                            </svg>
+                            <p class="text-sm">Only Academic subjects count towards Dean's List</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-action">
+                    <button class="btn btn-primary" onclick="document.getElementById('eligibilityModal').close()">Close</button>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <!-- Current Grades -->
+        <div class="card bg-base-100 shadow-xl mb-8" x-data="{ searchQuery: '' }">
+            <div class="card-body">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-primary/10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" x2="8" y1="13" y2="13"/>
+                                <line x1="16" x2="8" y1="17" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="card-title">{% if is_current_semester %}Current Semester Grades{% else %}Last Semester Grades{% endif %}</h2>
+                            <p class="text-sm opacity-60">Academic Year {{ display_academic_year }}, {{ display_semester }}{% if display_semester == 1 %}st{% else %}nd{% endif %} Semester</p>
+                        </div>
+
+                    </div>
+                    <div class="join">
+                        <input type="text" 
+                            placeholder="Search subjects..." 
+                            class="input input-bordered join-item"
+                            x-model="searchQuery"
+                        >
+                        <button class="btn join-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.3-4.3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                {% if grades %}
+                    <!-- Unit Breakdown Summary -->
+                    <div class="card bg-base-100 shadow-refined-light mb-4">
+                        <div class="card-body p-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <h3 class="font-bold text-base-content">Subject Type Breakdown</h3>
+                            </div>
+                            
+                            {% set academic_units = grades | selectattr('subject.subject_type', 'equalto', 'Academic') | sum(attribute='subject.units') %}
+                            {% set non_academic_units = grades | selectattr('subject.subject_type', 'ne', 'Academic') | sum(attribute='subject.units') %}
+                            {% set total_units = grades | sum(attribute='subject.units') %}
+                            
+                            <div class="space-y-3">
+                                <!-- Total Units -->
+                                <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                                    <span class="font-medium">Total Units Enrolled</span>
+                                    <span class="font-bold text-lg text-primary">{{ total_units }}</span>
+                                </div>
+                                
+                                <!-- Academic vs Non-Academic -->
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="p-3 bg-primary/10 rounded-lg">
+                                        <div class="text-sm text-primary/70 mb-1">Academic Subjects</div>
+                                        <div class="font-bold text-primary">{{ academic_units }} units</div>
+                                        <div class="text-xs text-primary/60">GWA computation</div>
+                                    </div>
+                                    <div class="p-3 bg-secondary/10 rounded-lg">
+                                        <div class="text-sm text-secondary/70 mb-1">Non-Academic Subjects</div>
+                                        <div class="font-bold text-secondary">{{ non_academic_units }} units</div>
+                                        <div class="text-xs text-secondary/60">Separate requirements</div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Subject Code</th>
+                                    <th>Subject Description</th>
+                                    <th class="text-center">Credits</th>
+                                    <th class="text-center">Type</th>
+                                    <th class="text-center">Final Grade</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for grade in grades %}
+                                <tr x-show="!searchQuery || 
+                                    '{{ grade.subject.subject_code }}'.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                    '{{ grade.subject.subject_name }}'.toLowerCase().includes(searchQuery.toLowerCase())">
+                                    <td class="font-semibold">{{ grade.subject.subject_code }}</td>
+                                    <td>
+                                        <div class="font-medium">{{ grade.subject.subject_name }}</div>
+                                    </td>
+                                    <td class="text-center">{{ grade.subject.units }}</td>
+                                    <td class="text-center">
+                                        {% if grade.subject.subject_type == 'Academic' %}
+                                            <div class="badge badge-primary badge-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                                    <path d="M4 22h16"/>
+                                                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                                </svg>
+                                                Academic
+                                            </div>
+                                        {% else %}
+                                            <div class="badge badge-secondary badge-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                                </svg>
+                                                Non-Academic
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center font-medium {% if display_semester == 1 %}text-primary{% else %}text-secondary{% endif %}">
+                                        {% if grade.remarks and grade.remarks in ['AW', 'UW', 'INC', 'Passed'] %}
+                                            —
+                                        {% else %}
+                                            {{ "%.2f"|format(grade.equivalent_grade) if grade.equivalent_grade else "-" }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if grade.remarks and grade.remarks in ['AW', 'UW', 'INC', 'Passed'] %}
+                                            {% if grade.remarks == 'Passed' %}
+                                                <div class="badge badge-success badge-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                                    </svg>
+                                                    Passed
+                                                </div>
+                                            {% elif grade.remarks == 'AW' %}
+                                                <div class="badge badge-accent badge-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M9 12l2 2 4-4"/>
+                                                        <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
+                                                        <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
+                                                    </svg>
+                                                    AW
+                                                </div>
+                                            {% elif grade.remarks == 'UW' %}
+                                                <div class="badge badge-warning badge-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                                        <line x1="12" y1="9" x2="12" y2="13"/>
+                                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                                    </svg>
+                                                    UW
+                                                </div>
+                                            {% elif grade.remarks == 'INC' %}
+                                                <div class="badge badge-info badge-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10"/>
+                                                        <line x1="12" y1="16" x2="12" y2="12"/>
+                                                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                                    </svg>
+                                                    INC
+                                                </div>
+                                            {% endif %}
+                                        {% elif grade.equivalent_grade %}
+                                            {% if grade.equivalent_grade <= 3.00 %}
+                                                <div class="badge badge-success badge-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                                    </svg>
+                                                    Passed
+                                                </div>
+                                            {% else %}
+                                                <div class="badge badge-error badge-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10"/>
+                                                        <line x1="15" y1="9" x2="9" y2="15"/>
+                                                        <line x1="9" y1="9" x2="15" y2="15"/>
+                                                    </svg>
+                                                    Failed
+                                                </div>
+                                            {% endif %}
+                                        {% else %}
+                                            <div class="badge badge-ghost badge-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                </svg>
+                                                No Grade
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                {% else %}
+                    <div class="text-center py-12">
+                        <div class="p-4 bg-base-200 rounded-full w-fit mx-auto mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <circle cx="12" cy="18" r="1"/>
+                                <line x1="12" x2="12" y1="12" y2="14"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">No Grades Available</h3>
+                        <p class="opacity-60">Grades will appear here as they are encoded by your instructors.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Academic Progress Chart -->
+        <div class="card bg-base-100 shadow-xl" x-data="progressChart()">
+            <div class="card-body">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-secondary/10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3v18h18"/>
+                                <path d="m19 9-5 5-4-4-3 3"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="card-title">Academic Progress Tracking</h2>
+                            <p class="text-sm opacity-60">Semester-by-semester performance overview</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                    <div class="join">
+                            <button @click="switchView('semester')" 
+                                    :class="viewType === 'semester' ? 'btn-active' : ''"
+                                    class="btn join-item btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                    <line x1="16" x2="16" y1="2" y2="6"/>
+                                    <line x1="8" x2="8" y1="2" y2="6"/>
+                                    <line x1="3" x2="21" y1="10" y2="10"/>
+                                </svg>
+                                By Semester
+                            </button>
+                            <button @click="switchView('yearly')" 
+                                    :class="viewType === 'yearly' ? 'btn-active' : ''"
+                                    class="btn join-item btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 3v18h18"/>
+                                    <path d="m19 9-5 5-4-4-3 3"/>
+                                </svg>
+                                By Year
+                            </button>
+                        </div>
+                        <button @click="downloadChart()" class="btn btn-outline btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" x2="12" y1="15" y2="3"/>
+                            </svg>
+                            Export
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chart Container -->
+                <div class="bg-base-200 rounded-lg p-6 mb-6">
+                    <div x-show="loading" class="text-center py-12">
+                        <div class="loading loading-spinner loading-lg text-primary"></div>
+                        <p class="mt-4 text-base-content/60">Loading your academic progress...</p>
+                    </div>
+                    
+                    <div x-show="!loading && hasData" class="relative">
+                        <canvas id="progressChart" width="800" height="400"></canvas>
+                    </div>
+                    
+                    <div x-show="!loading && !hasData" class="text-center py-12">
+                        <div class="p-4 bg-base-100 rounded-full w-fit mx-auto mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3v18h18"/>
+                                <path d="m19 9-5 5-4-4-3 3"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">No Academic Data Available</h3>
+                        <p class="opacity-60 mb-4">Your academic progress will appear here once you have completed grades.</p>
+                        <div class="text-sm opacity-50">
+                            <p>Complete grades from instructors will be displayed in this chart.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div x-show="!loading && hasData" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="stats shadow-refined-light">
+                                <div class="stat">
+                                    <div class="stat-figure text-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                                            <polyline points="16 7 22 7 22 13"/>
+                                        </svg>
+                                    </div>
+                                    <div class="stat-title">GWA Trend</div>
+                            <div class="stat-value text-primary" x-text="trendText"></div>
+                            <div class="stat-desc" x-text="trendDescription"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="stats shadow-refined-light">
+                                <div class="stat">
+                                    <div class="stat-figure text-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                        </svg>
+                                    </div>
+                            <div class="stat-title">Total Units</div>
+                            <div class="stat-value text-success" x-text="totalUnits"></div>
+                            <div class="stat-desc">Completed</div>
+                                </div>
+                            </div>
+                            
+                            <div class="stats shadow-refined-light">
+                                <div class="stat">
+                                    <div class="stat-figure text-accent">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                            <path d="M4 22h16"/>
+                                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                        </svg>
+                                    </div>
+                            <div class="stat-title">Best Performance</div>
+                            <div class="stat-value text-accent" x-text="bestGWA"></div>
+                            <div class="stat-desc" x-text="bestPeriod"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Legend -->
+                <div x-show="!loading && hasData" class="flex flex-wrap justify-center gap-4 text-sm">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-primary rounded-full"></div>
+                        <span>GWA (General Weighted Average)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-success rounded-full"></div>
+                        <span>Dean's List Threshold (1.75)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+function progressChart() {
+    return {
+        loading: true,
+        hasData: false,
+        viewType: 'semester', // 'semester' or 'yearly'
+        chart: null,
+        semesterData: [],
+        yearlyData: [],
+        trendText: '0.00',
+        trendDescription: 'No data',
+        totalUnits: 0,
+        bestGWA: '0.00',
+        bestPeriod: 'No data',
+        
+        async init() {
+            await this.loadData();
+        },
+        
+        async loadData() {
+            try {
+                this.loading = true;
+                const response = await fetch('/api/student/progress-data');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    this.semesterData = result.data.semester_data;
+                    this.yearlyData = result.data.yearly_data;
+                    this.hasData = this.semesterData.length > 0 || this.yearlyData.length > 0;
+                    
+                    if (this.hasData) {
+                        this.calculateStatistics();
+                        this.createChart();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading progress data:', error);
+                this.hasData = false;
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        calculateStatistics() {
+            if (this.semesterData.length === 0) return;
+            
+            // Calculate trend
+            const firstGWA = this.semesterData[0].gwa;
+            const lastGWA = this.semesterData[this.semesterData.length - 1].gwa;
+            const trend = lastGWA - firstGWA;
+            
+            this.trendText = trend > 0 ? `+${trend.toFixed(2)}` : trend.toFixed(2);
+            this.trendDescription = trend > 0 ? 'Improving' : trend < 0 ? 'Declining' : 'Stable';
+            
+            // Calculate total units
+            this.totalUnits = this.semesterData.reduce((sum, sem) => sum + sem.total_units, 0);
+            
+            // Find best performance
+            const bestSemester = this.semesterData.reduce((best, current) => 
+                current.gwa < best.gwa ? current : best
+            );
+            this.bestGWA = bestSemester.gwa.toFixed(2);
+            this.bestPeriod = bestSemester.label;
+        },
+        
+        createChart() {
+            const ctx = document.getElementById('progressChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart
+            if (this.chart) {
+                this.chart.destroy();
+            }
+            
+            const data = this.viewType === 'semester' ? this.semesterData : this.yearlyData;
+            
+            if (data.length === 0) return;
+            
+            const labels = data.map(item => item.label);
+            const gwaValues = data.map(item => item.gwa);
+            
+            // Create Dean's List threshold line
+            const deansListThreshold = Array(data.length).fill(1.75);
+            
+            this.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'GWA (General Weighted Average)',
+                            data: gwaValues,
+                            borderColor: 'rgb(59, 130, 246)', // Primary blue
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgb(59, 130, 246)',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: "Dean's List Threshold",
+                            data: deansListThreshold,
+                            borderColor: 'rgb(34, 197, 94)', // Success green
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            pointHoverRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: this.viewType === 'semester' ? 'Academic Performance by Semester' : 'Academic Performance by Year',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            color: '#374151'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    if (context.datasetIndex === 0) {
+                                        return `${label}: ${value.toFixed(2)}`;
+                                    } else {
+                                        return `${label}: ${value.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: this.viewType === 'semester' ? 'Academic Period' : 'Academic Year',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'GWA (General Weighted Average)',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            min: 1.0,
+                            max: 4.0,
+                            ticks: {
+                                stepSize: 0.25,
+                                callback: function(value) {
+                                    return value.toFixed(2);
+                                }
+                            },
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    elements: {
+                        point: {
+                            hoverBackgroundColor: '#ffffff'
+                        }
+                    }
+                }
+            });
+        },
+        
+        switchView(type) {
+            this.viewType = type;
+            if (this.hasData) {
+                this.createChart();
+            }
+        },
+        
+        downloadChart() {
+            if (this.chart) {
+                const link = document.createElement('a');
+                link.download = `academic-progress-${this.viewType}-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = this.chart.toBase64Image();
+                link.click();
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

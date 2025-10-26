@@ -1,0 +1,299 @@
+{% extends "common/base.html" %}
+
+{% block title %}Select Instructor - Registrar Dashboard{% endblock %}
+
+{% block content %}
+<section class="min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-base-content tracking-tight">Select Instructor</h1>
+                    <p class="text-base-content/60 mt-1">Choose a department first, then select an instructor to view their dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Selection -->
+        <div class="mb-8">
+            <div class="card bg-base-100 shadow-xl border border-base-300/50">
+                <div class="card-body">
+                    <h2 class="card-title text-xl mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9,22 9,12 15,12 15,22"/>
+                        </svg>
+                        Select Department
+                    </h2>
+                    <p class="text-base-content/60 mb-4">Choose a department to view its instructors</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button onclick="selectDepartment('BSCS')" class="department-btn btn btn-outline btn-lg h-20 flex flex-col items-center justify-center hover:bg-yellow-500 hover:text-white hover:border-yellow-500 transition-all duration-300" data-department="BSCS">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                            </svg>
+                            <span class="font-semibold">BSCS</span>
+                            <span class="text-xs opacity-70">Computer Science</span>
+                        </button>
+                        
+                        <button onclick="selectDepartment('BEED')" class="department-btn btn btn-outline btn-lg h-20 flex flex-col items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300" data-department="BEED">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                            <span class="font-semibold">BEED</span>
+                            <span class="text-xs opacity-70">Elementary Education</span>
+                        </button>
+                        
+                        <button onclick="selectDepartment('BSHM')" class="department-btn btn btn-outline btn-lg h-20 flex flex-col items-center justify-center hover:bg-red-800 hover:text-white hover:border-red-800 transition-all duration-300" data-department="BSHM">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                <polyline points="9,22 9,12 15,12 15,22"/>
+                            </svg>
+                            <span class="font-semibold">BSHM</span>
+                            <span class="text-xs opacity-70">Hospitality Management</span>
+                        </button>
+                        
+                        <button onclick="selectDepartment('BSED')" class="department-btn btn btn-outline btn-lg h-20 flex flex-col items-center justify-center hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-all duration-300" data-department="BSED">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                            </svg>
+                            <span class="font-semibold">BSED</span>
+                            <span class="text-xs opacity-70">Secondary Education</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Department Info -->
+        <div id="selectedDepartmentInfo" class="mb-8 hidden">
+            <div class="alert alert-info">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="m9 12 2 2 4-4"/>
+                </svg>
+                <div>
+                    <h3 class="font-bold">Selected Department: <span id="selectedDeptName"></span></h3>
+                    <div class="text-xs">Showing instructors from this department</div>
+                </div>
+                <button onclick="clearSelection()" class="btn btn-sm btn-outline">Change Department</button>
+            </div>
+        </div>
+
+
+        <!-- Instructors Grid -->
+        <div id="instructorsGrid" class="hidden">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-base-content mb-2">Instructors</h2>
+                <p class="text-base-content/60">Select an instructor to view their dashboard</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="instructorsContainer">
+                <!-- Instructors will be loaded here via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Empty State for No Instructors -->
+        <div id="noInstructorsState" class="text-center py-16 hidden">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-500/10 mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-base-content mb-2">No Instructors Found</h3>
+            <p class="text-base-content/60 mb-6 max-w-md mx-auto">There are currently no active instructors in the selected department.</p>
+        </div>
+
+        <!-- Quick Stats Summary -->
+        <div id="statsSummary" class="mt-8 hidden">
+            <div class="stats shadow w-full">
+                <div class="stat">
+                    <div class="stat-figure text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Department Instructors</div>
+                    <div class="stat-value text-primary" id="deptInstructorCount">0</div>
+                    <div class="stat-desc">In selected department</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-figure text-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Total Subjects</div>
+                    <div class="stat-value text-secondary" id="deptSubjectCount">0</div>
+                    <div class="stat-desc">In this department</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-figure text-accent">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="m9 12 2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Active Instructors</div>
+                    <div class="stat-value text-accent" id="deptActiveCount">0</div>
+                    <div class="stat-desc">Currently active</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Store instructor data from server
+const instructorData = {{ instructor_stats_json | tojson }};
+let selectedDepartment = null;
+
+function selectDepartment(dept) {
+    selectedDepartment = dept;
+    
+    // Update UI
+    document.getElementById('selectedDeptName').textContent = dept;
+    document.getElementById('selectedDepartmentInfo').classList.remove('hidden');
+    
+    // Filter instructors by department
+    const filteredInstructors = instructorData.filter(stat => 
+        stat.instructor.department === dept
+    );
+    
+    // Show/hide sections
+    if (filteredInstructors.length > 0) {
+        document.getElementById('instructorsGrid').classList.remove('hidden');
+        document.getElementById('noInstructorsState').classList.add('hidden');
+        document.getElementById('statsSummary').classList.remove('hidden');
+        
+        // Render instructors
+        renderInstructors(filteredInstructors);
+        
+        // Update stats
+        updateStats(filteredInstructors);
+    } else {
+        document.getElementById('instructorsGrid').classList.add('hidden');
+        document.getElementById('noInstructorsState').classList.remove('hidden');
+        document.getElementById('statsSummary').classList.add('hidden');
+    }
+    
+    // Scroll to instructors section
+    document.getElementById('instructorsGrid').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+}
+
+function clearSelection() {
+    selectedDepartment = null;
+    
+    // Hide all sections
+    document.getElementById('selectedDepartmentInfo').classList.add('hidden');
+    document.getElementById('instructorsGrid').classList.add('hidden');
+    document.getElementById('noInstructorsState').classList.add('hidden');
+    document.getElementById('statsSummary').classList.add('hidden');
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderInstructors(instructors) {
+    const container = document.getElementById('instructorsContainer');
+    container.innerHTML = '';
+    
+    instructors.forEach(stat => {
+        const instructor = stat.instructor;
+        const instructorCard = document.createElement('div');
+        instructorCard.className = 'card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-300/50';
+        
+        instructorCard.innerHTML = `
+            <div class="card-body">
+                <!-- Instructor Avatar and Info -->
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="avatar">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-xl select-none" style="display: grid; place-items: center; line-height: 1; font-family: 'Inter', sans-serif;">
+                            ${instructor.first_name[0]}${instructor.last_name[0]}
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-base-content">
+                            ${instructor.first_name} ${instructor.last_name}
+                        </h3>
+                        <p class="text-sm text-base-content/60">${instructor.email}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="badge badge-primary badge-sm">Instructor</span>
+                            ${instructor.active ? 
+                                '<span class="badge badge-success badge-sm">Active</span>' : 
+                                '<span class="badge badge-error badge-sm">Inactive</span>'
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="stats stats-vertical sm:stats-horizontal shadow-sm">
+                    <div class="stat py-2">
+                        <div class="stat-title text-xs">Subjects</div>
+                        <div class="stat-value text-lg text-primary">${stat.subject_count}</div>
+                    </div>
+                    <div class="stat py-2">
+                        <div class="stat-title text-xs">Status</div>
+                        <div class="stat-value text-lg">
+                            ${instructor.active ? 
+                                '<span class="text-success">Active</span>' : 
+                                '<span class="text-error">Inactive</span>'
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="card-actions justify-end mt-4">
+                    <a href="/registrar/instructor-dashboard/${instructor.id}" 
+                       class="btn btn-primary gap-2 w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                        View Dashboard
+                    </a>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(instructorCard);
+    });
+}
+
+function updateStats(instructors) {
+    const totalInstructors = instructors.length;
+    const totalSubjects = instructors.reduce((sum, stat) => sum + stat.subject_count, 0);
+    const activeInstructors = instructors.filter(stat => stat.instructor.active).length;
+    
+    document.getElementById('deptInstructorCount').textContent = totalInstructors;
+    document.getElementById('deptSubjectCount').textContent = totalSubjects;
+    document.getElementById('deptActiveCount').textContent = activeInstructors;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,623 @@
+{% extends "common/base.html" %}
+
+{% block title %}Enroll Student - Registrar{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-base-200/30">
+    <div class="max-w-4xl mx-auto p-6">
+        <!-- Header -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-gradient-to-br from-primary to-blue-600 rounded-xl shadow-refined-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-base-content">Enroll Student</h1>
+                        <p class="text-base-content/60">Process student enrollment for academic year</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ url_for('pending_enrollments') }}" class="btn btn-outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        Back to Pending
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Information Card -->
+        <div class="card bg-base-100 shadow-refined-medium mb-6">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Student Information</h2>
+                
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="avatar placeholder">
+                        <div class="bg-neutral text-neutral-content rounded-full w-16">
+                            <span class="text-xl">{{ student.first_name[0] }}{{ student.last_name[0] }}</span>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold">{{ student.first_name }} {{ student.last_name }}</h3>
+                        {% if student.middle_name %}
+                        <p class="text-base-content/60">{{ student.middle_name }}</p>
+                        {% endif %}
+                        <div class="flex gap-4 mt-2">
+                            <span class="badge badge-outline">{{ student.student_id }}</span>
+                            <span class="badge badge-outline">{{ student.department }}</span>
+                            <span class="badge badge-warning">{{ student.enrollment_status }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-semibold">Email</span>
+                        </label>
+                        <p class="text-base-content">{{ student.email }}</p>
+                    </div>
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-semibold">Course</span>
+                        </label>
+                        <p class="text-base-content">{{ student.course or 'Not Specified' }}</p>
+                    </div>
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-semibold">Mobile Number</span>
+                        </label>
+                        <p class="text-base-content">{{ student.mobile_no or 'Not Provided' }}</p>
+                    </div>
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-semibold">Account Created</span>
+                        </label>
+                        <p class="text-base-content">{{ student.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enrollment Form -->
+        <div class="card bg-base-100 shadow-refined-medium">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Enrollment Details</h2>
+                
+                <form method="POST" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Academic Year -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Academic Year</span>
+                                <span class="label-text-alt text-error">Required</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select name="academic_year" required class="select select-bordered flex-1">
+                                    <option value="">Select Academic Year</option>
+                                    {% for year in academic_years %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn btn-outline btn-square" onclick="add_academic_year_modal.showModal()" title="Add New Academic Year">
+                                    <span class="text-base-content text-lg">+</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Semester -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Semester</span>
+                                <span class="label-text-alt text-error">Required</span>
+                            </label>
+                            <select name="semester" required class="select select-bordered">
+                                <option value="">Select Semester</option>
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                            </select>
+                        </div>
+
+                        <!-- Year Level -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Year Level</span>
+                                <span class="label-text-alt text-error">Required</span>
+                            </label>
+                            <select name="year_level" required class="select select-bordered">
+                                <option value="">Select Year Level</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+
+                        <!-- Section -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Section</span>
+                                <span class="label-text-alt">Optional</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select name="section" class="select select-bordered flex-1">
+                                    <option value="">Select Section</option>
+                                    {% for section in sections %}
+                                    <option value="{{ section }}">{{ section }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn btn-outline btn-square" onclick="add_section_modal.showModal()" title="Add New Section">
+                                    <span class="text-base-content text-lg">+</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Curriculum -->
+                        <div class="form-control md:col-span-2">
+                            <label class="label">
+                                <span class="label-text font-semibold">Curriculum</span>
+                                <span class="label-text-alt text-error">Required</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select name="curriculum" required class="select select-bordered flex-1">
+                                    <option value="">Select Curriculum</option>
+                                    {% for curriculum in curricula %}
+                                    <option value="{{ curriculum }}">{{ curriculum }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn btn-outline btn-square" onclick="add_curriculum_modal.showModal()" title="Add New Curriculum">
+                                    <span class="text-base-content text-lg">+</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="card-actions justify-end mt-8">
+                        <a href="{{ url_for('pending_enrollments') }}" class="btn btn-outline">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            Enroll Student
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Enrollment Information -->
+        <div class="card bg-base-100 shadow-refined-medium mt-6">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Enrollment Information</h2>
+                
+                <div class="alert alert-info">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold">Important Notes</h3>
+                        <div class="text-sm">
+                            <ul class="list-disc list-inside space-y-1 mt-2">
+                                <li>Once enrolled, the student will be able to access their dashboard</li>
+                                <li>Subject assignment will be available after enrollment</li>
+                                <li>Academic year and semester must match the current academic calendar</li>
+                                <li>Curriculum selection determines available subjects for assignment</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Section Modal -->
+<dialog id="add_section_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">Add New Section</h3>
+        
+        <form id="add_section_form" class="space-y-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Section Name</span>
+                    <span class="label-text-alt text-error">Required</span>
+                </label>
+                <input type="text" id="new_section_name" class="input input-bordered" placeholder="e.g., 4A, 3B, 2C" required>
+                <label class="label">
+                    <span class="label-text-alt text-base-content/60">Enter a unique section identifier</span>
+                </label>
+            </div>
+            
+            <div class="modal-action">
+                <button type="button" class="btn btn-outline" onclick="add_section_modal.close()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14m7-7H5"/>
+                    </svg>
+                    Add Section
+                </button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
+<!-- Add Curriculum Modal -->
+<dialog id="add_curriculum_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">Add New Curriculum</h3>
+        
+        <form id="add_curriculum_form" class="space-y-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Curriculum Name</span>
+                    <span class="label-text-alt text-error">Required</span>
+                </label>
+                <input type="text" id="new_curriculum_name" class="input input-bordered" placeholder="e.g., BSCS 2025-2029" required>
+                <label class="label">
+                    <span class="label-text-alt text-base-content/60">Enter curriculum identifier (e.g., BSCS 2025-2029)</span>
+                </label>
+            </div>
+            
+            <div class="modal-action">
+                <button type="button" class="btn btn-outline" onclick="add_curriculum_modal.close()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14m7-7H5"/>
+                    </svg>
+                    Add Curriculum
+                </button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
+<!-- Add Academic Year Modal -->
+<dialog id="add_academic_year_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">Add New Academic Year</h3>
+        
+        <form id="add_academic_year_form" class="space-y-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Academic Year</span>
+                    <span class="label-text-alt text-error">Required</span>
+                </label>
+                <input type="text" id="new_academic_year_name" class="input input-bordered" placeholder="e.g., 2025-2026" required>
+                <label class="label">
+                    <span class="label-text-alt text-base-content/60">Enter academic year (e.g., 2025-2026)</span>
+                </label>
+            </div>
+            
+            <div class="modal-action">
+                <button type="button" class="btn btn-outline" onclick="add_academic_year_modal.close()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14m7-7H5"/>
+                    </svg>
+                    Add Academic Year
+                </button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addSectionForm = document.getElementById('add_section_form');
+    const sectionSelect = document.querySelector('select[name="section"]');
+    const newSectionInput = document.getElementById('new_section_name');
+    
+    // Handle form submission
+    addSectionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const newSectionName = newSectionInput.value.trim();
+        
+        if (!newSectionName) {
+            alert('Please enter a section name');
+            return;
+        }
+        
+        // Check if section already exists
+        const existingOptions = Array.from(sectionSelect.options).map(option => option.value.toLowerCase());
+        if (existingOptions.includes(newSectionName.toLowerCase())) {
+            alert('This section already exists');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = addSectionForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span>Adding...';
+        submitBtn.disabled = true;
+        
+        // Call API to create section
+        fetch('/api/create-section', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                section_name: newSectionName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Add new option to dropdown
+                const newOption = document.createElement('option');
+                newOption.value = newSectionName;
+                newOption.textContent = newSectionName;
+                newOption.selected = true;
+                
+                // Insert before the last option (if there are existing options)
+                if (sectionSelect.options.length > 1) {
+                    sectionSelect.insertBefore(newOption, sectionSelect.lastElementChild);
+                } else {
+                    sectionSelect.appendChild(newOption);
+                }
+                
+                // Clear input and close modal
+                newSectionInput.value = '';
+                add_section_modal.close();
+                
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'toast toast-top toast-end';
+                toast.innerHTML = `
+                    <div class="alert alert-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>${data.message}</span>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                // Remove toast after 3 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            } else {
+                alert(data.error || 'Failed to create section');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create section. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Clear form when modal is closed
+    add_section_modal.addEventListener('close', function() {
+        newSectionInput.value = '';
+    });
+    
+    // Curriculum form handling
+    const addCurriculumForm = document.getElementById('add_curriculum_form');
+    const curriculumSelect = document.querySelector('select[name="curriculum"]');
+    const newCurriculumNameInput = document.getElementById('new_curriculum_name');
+    
+    // Handle curriculum form submission
+    addCurriculumForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const newCurriculumName = newCurriculumNameInput.value.trim();
+        
+        if (!newCurriculumName) {
+            alert('Please enter a curriculum name');
+            return;
+        }
+        
+        // Check if curriculum already exists
+        const existingOptions = Array.from(curriculumSelect.options).map(option => option.value.toLowerCase());
+        if (existingOptions.includes(newCurriculumName.toLowerCase())) {
+            alert('This curriculum already exists');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = addCurriculumForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span>Adding...';
+        submitBtn.disabled = true;
+        
+        // Call API to create curriculum
+        fetch('/api/create-curriculum', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                curriculum_name: newCurriculumName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Add new option to dropdown
+                const newOption = document.createElement('option');
+                newOption.value = newCurriculumName;
+                newOption.textContent = newCurriculumName;
+                newOption.selected = true;
+                
+                // Insert before the last option (if there are existing options)
+                if (curriculumSelect.options.length > 1) {
+                    curriculumSelect.insertBefore(newOption, curriculumSelect.lastElementChild);
+                } else {
+                    curriculumSelect.appendChild(newOption);
+                }
+                
+                // Clear input and close modal
+                newCurriculumNameInput.value = '';
+                add_curriculum_modal.close();
+                
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'toast toast-top toast-end';
+                toast.innerHTML = `
+                    <div class="alert alert-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>${data.message}</span>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                // Remove toast after 3 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            } else {
+                alert(data.error || 'Failed to create curriculum');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create curriculum. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Clear curriculum form when modal is closed
+    add_curriculum_modal.addEventListener('close', function() {
+        newCurriculumNameInput.value = '';
+    });
+    
+    // Academic Year form handling
+    const addAcademicYearForm = document.getElementById('add_academic_year_form');
+    const academicYearSelect = document.querySelector('select[name="academic_year"]');
+    const newAcademicYearNameInput = document.getElementById('new_academic_year_name');
+    
+    // Handle academic year form submission
+    addAcademicYearForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const newAcademicYearName = newAcademicYearNameInput.value.trim();
+        
+        if (!newAcademicYearName) {
+            alert('Please enter an academic year');
+            return;
+        }
+        
+        // Check if academic year already exists
+        const existingOptions = Array.from(academicYearSelect.options).map(option => option.value.toLowerCase());
+        if (existingOptions.includes(newAcademicYearName.toLowerCase())) {
+            alert('This academic year already exists');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = addAcademicYearForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span>Adding...';
+        submitBtn.disabled = true;
+        
+        // Call API to create academic year
+        fetch('/api/create-academic-year', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                academic_year_name: newAcademicYearName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Add new option to dropdown
+                const newOption = document.createElement('option');
+                newOption.value = newAcademicYearName;
+                newOption.textContent = newAcademicYearName;
+                newOption.selected = true;
+                
+                // Insert before the last option (if there are existing options)
+                if (academicYearSelect.options.length > 1) {
+                    academicYearSelect.insertBefore(newOption, academicYearSelect.lastElementChild);
+                } else {
+                    academicYearSelect.appendChild(newOption);
+                }
+                
+                // Clear input and close modal
+                newAcademicYearNameInput.value = '';
+                add_academic_year_modal.close();
+                
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'toast toast-top toast-end';
+                toast.innerHTML = `
+                    <div class="alert alert-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>${data.message}</span>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                // Remove toast after 3 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            } else {
+                alert(data.error || 'Failed to create academic year');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create academic year. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Clear academic year form when modal is closed
+    add_academic_year_modal.addEventListener('close', function() {
+        newAcademicYearNameInput.value = '';
+    });
+});
+</script>
+
+{% endblock %}

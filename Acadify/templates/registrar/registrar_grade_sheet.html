@@ -1,0 +1,732 @@
+{% extends "common/base.html" %}
+
+{% block title %}Grade Sheet - Registrar{% endblock %}
+
+{% block content %}
+<section class="min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" x2="8" y1="13" y2="13"/>
+                        <line x1="16" x2="8" y1="17" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-base-content tracking-tight">Grade Sheet Management</h1>
+                    <p class="text-base-content/60 mt-1">Comprehensive grade overview and management</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Filters Section -->
+        <div class="card bg-base-100 shadow-refined-light mb-6">
+            <div class="card-body p-4">
+                <div class="flex flex-col lg:flex-row gap-4">
+                    <!-- Academic Year Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Academic Year</span>
+                        </label>
+                        <select class="select select-bordered" id="academicYearFilter">
+                            <option value="">All Years</option>
+                            <option value="2024-2025" selected>2024-2025</option>
+                            <option value="2023-2024">2023-2024</option>
+                            <option value="2022-2023">2022-2023</option>
+                        </select>
+                    </div>
+
+                    <!-- Semester Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Semester</span>
+                        </label>
+                        <select class="select select-bordered" id="semesterFilter">
+                            <option value="">All Semesters</option>
+                            <option value="1" selected>1st Semester</option>
+                            <option value="2">2nd Semester</option>
+                        </select>
+                    </div>
+
+                    <!-- Department Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Department</span>
+                        </label>
+                        <select class="select select-bordered" id="departmentFilter">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept }}">{{ dept }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Year Level Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Year Level</span>
+                        </label>
+                        <select class="select select-bordered" id="yearLevelFilter">
+                            <option value="">All Years</option>
+                            {% for year in year_levels %}
+                            <option value="{{ year }}">{{ year }} Year</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Section Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Section</span>
+                        </label>
+                        <select class="select select-bordered" id="sectionFilter">
+                            <option value="">All Sections</option>
+                            {% for section in sections %}
+                            <option value="{{ section }}">{{ section }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Subject Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Subject</span>
+                        </label>
+                        <select class="select select-bordered" id="subjectFilter">
+                            <option value="">All Subjects</option>
+                            {% for subject_code, subject_name in subjects %}
+                            <option value="{{ subject_code }}">{{ subject_code }} - {{ subject_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Grade Status Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Status</span>
+                        </label>
+                        <select class="select select-bordered" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="approved">Approved</option>
+                            <option value="pending">Pending</option>
+                            <option value="incomplete">Incomplete</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Search and Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                    <div class="flex-1">
+                        <div class="join w-full">
+                            <input class="join-item input input-bordered flex-1" placeholder="Search by Student ID or Name..." id="searchInput"/>
+                            <button class="join-item btn btn-primary" onclick="searchGrades()">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.3-4.3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-outline" onclick="clearFilters()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18"/>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            </svg>
+                            Clear
+                        </button>
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                            </svg>
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="card bg-base-100 shadow-refined-light mb-6">
+            <div class="card-body p-4">
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="form-control">
+                            <label class="cursor-pointer label">
+                                <input type="checkbox" class="checkbox checkbox-primary" id="selectAll"/>
+                                <span class="label-text ml-2 font-medium">Select All</span>
+                            </label>
+                        </div>
+                        <div class="text-sm text-base-content/60">
+                            <span id="selectedCount">0</span> selected
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-success btn-sm" onclick="approveSelected()" disabled id="approveBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Approve Selected
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="exportSelected()" disabled id="exportBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Export Selected
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="printSelected()" disabled id="printBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 6 2 18 2 18 9"/>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                <rect width="12" height="8" x="6" y="14"/>
+                            </svg>
+                            Print Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grade Sheet Table -->
+        <div class="card bg-base-100 shadow-refined-light">
+            <div class="card-body p-0">
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr class="bg-base-200">
+                                <th class="w-12">
+                                    <input type="checkbox" class="checkbox checkbox-sm" id="selectAllCheckbox"/>
+                                </th>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th>Department</th>
+                                <th>Year/Section</th>
+                                <th>Subject</th>
+                                <th class="text-center">Prelim</th>
+                                <th class="text-center">Midterm</th>
+                                <th class="text-center">Final</th>
+                                <th class="text-center">Average</th>
+                                <th class="text-center">Equivalent</th>
+                                <th class="text-center">Remarks</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gradeTableBody">
+                            {% if grades %}
+                                {% for grade, student, subject, approver in grades %}
+                                <tr class="grade-row hover">
+                                    <td>
+                                        <input type="checkbox" class="checkbox checkbox-sm grade-checkbox" data-grade-id="{{ grade.id }}"/>
+                                    </td>
+                                    <td class="font-medium">{{ student.student_id or 'N/A' }}</td>
+                                    <td>
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar placeholder">
+                                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 text-white">
+                                                    <span class="text-xs font-bold">{{ student.first_name[0] }}{{ student.last_name[0] }}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium">{{ student.last_name }}, {{ student.first_name }} {{ student.middle_name or '' }}</div>
+                                                <div class="text-xs opacity-60">{{ student.email or 'No email' }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-outline">{{ subject.department or 'N/A' }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm">
+                                            <div class="font-medium">{{ subject.year_level or 'N/A' }} Year</div>
+                                            <div class="opacity-60">{{ subject.section or 'N/A' }}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm">
+                                            <div class="font-medium">{{ subject.subject_code }}</div>
+                                            <div class="opacity-60">{{ subject.subject_name }}</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center font-medium">{{ grade.prelim_grade or '—' }}</td>
+                                    <td class="text-center font-medium">{{ grade.midterm_grade or '—' }}</td>
+                                    <td class="text-center font-medium">{{ grade.final_grade or '—' }}</td>
+                                    <td class="text-center">
+                                        {% if grade.final_average %}
+                                            <div class="badge badge-success badge-lg font-bold">{{ "%.2f"|format(grade.final_average) }}</div>
+                                        {% else %}
+                                            <div class="badge badge-ghost">—</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if grade.equivalent_grade %}
+                                            <div class="badge badge-info">{{ grade.equivalent_grade }}</div>
+                                        {% else %}
+                                            <div class="badge badge-ghost">—</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if grade.remarks %}
+                                            <div class="badge badge-success">{{ grade.remarks }}</div>
+                                        {% else %}
+                                            <div class="badge badge-ghost">—</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if grade.approved_at %}
+                                            <div class="badge badge-success gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                Approved
+                                            </div>
+                                        {% elif grade.is_complete %}
+                                            <div class="badge badge-warning gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                                </svg>
+                                                Pending
+                                            </div>
+                                        {% else %}
+                                            <div class="badge badge-error gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <line x1="15" y1="9" x2="9" y2="15"/>
+                                                    <line x1="9" y1="9" x2="15" y2="15"/>
+                                                </svg>
+                                                Incomplete
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="flex gap-1">
+                                            <button class="btn btn-ghost btn-xs" onclick="viewDetails({{ grade.id }})" title="View Details">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                                </svg>
+                                            </button>
+                                            {% if not grade.approved_at and grade.is_complete %}
+                                            <button class="btn btn-success btn-xs" onclick="approveGrade({{ grade.id }})" title="Approve Grade">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-ghost btn-xs" onclick="printGrade({{ grade.id }})" title="Print Grade">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="6 9 6 2 18 2 18 9"/>
+                                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                                    <rect width="12" height="8" x="6" y="14"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="14" class="text-center py-12">
+                                        <div class="text-center">
+                                            <div class="p-4 bg-base-200 rounded-full w-fit mx-auto mb-4">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                    <polyline points="14 2 14 8 20 8"/>
+                                                    <line x1="16" x2="8" y1="13" y2="13"/>
+                                                    <line x1="16" x2="8" y1="17" y2="17"/>
+                                                    <polyline points="10 9 9 9 8 9"/>
+                                                </svg>
+                                            </div>
+                                            <h3 class="text-xl font-bold mb-2">No Grade Records</h3>
+                                            <p class="opacity-60">No grade records found for the current academic period.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-between items-center p-4 border-t border-base-300">
+                    <div class="text-sm text-base-content/60">
+                        Showing 1-{{ grades|length }} of {{ grades|length }} records
+                    </div>
+                    <div class="join">
+                        <button class="join-item btn btn-sm">«</button>
+                        <button class="join-item btn btn-sm btn-active">1</button>
+                        <button class="join-item btn btn-sm">2</button>
+                        <button class="join-item btn btn-sm">3</button>
+                        <button class="join-item btn btn-sm">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Actions -->
+        <div class="card bg-base-100 shadow-refined-light mt-6">
+            <div class="card-body">
+                <h3 class="card-title mb-4">Export Options</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button class="btn btn-outline gap-2" onclick="exportToExcel()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export to Excel
+                    </button>
+                    <button class="btn btn-outline gap-2" onclick="exportToPDF()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        Export to PDF
+                    </button>
+                    <button class="btn btn-outline gap-2" onclick="printAllGrades()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 6 2 18 2 18 9"/>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                            <rect width="12" height="8" x="6" y="14"/>
+                        </svg>
+                        Print All Grades
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Grade Details Modal -->
+<div id="gradeDetailsModal" class="modal">
+    <div class="modal-box max-w-4xl">
+        <h3 class="font-bold text-lg mb-4">Grade Details</h3>
+        <div id="gradeDetailsContent">
+            <!-- Grade details will be loaded here -->
+        </div>
+        <div class="modal-action">
+            <button class="btn" onclick="closeGradeDetails()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global variables
+let selectedGrades = new Set();
+let currentFilters = {};
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEventListeners();
+    loadGradeData();
+});
+
+function initializeEventListeners() {
+    // Select all checkbox
+    document.getElementById('selectAllCheckbox').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.grade-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+            if (this.checked) {
+                selectedGrades.add(checkbox.dataset.gradeId);
+            } else {
+                selectedGrades.delete(checkbox.dataset.gradeId);
+            }
+        });
+        updateSelectedCount();
+        updateActionButtons();
+    });
+
+    // Individual grade checkboxes
+    document.querySelectorAll('.grade-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                selectedGrades.add(this.dataset.gradeId);
+            } else {
+                selectedGrades.delete(this.dataset.gradeId);
+            }
+            updateSelectedCount();
+            updateActionButtons();
+        });
+    });
+
+    // Filter inputs
+    document.querySelectorAll('select[id$="Filter"]').forEach(select => {
+        select.addEventListener('change', function() {
+            applyFilters();
+        });
+    });
+
+    // Search input
+    document.getElementById('searchInput').addEventListener('input', function() {
+        searchGrades();
+    });
+}
+
+function loadGradeData() {
+    // This would typically fetch data from the server
+    console.log('Loading grade data...');
+}
+
+function applyFilters() {
+    const filters = {
+        academicYear: document.getElementById('academicYearFilter').value,
+        semester: document.getElementById('semesterFilter').value,
+        department: document.getElementById('departmentFilter').value,
+        yearLevel: document.getElementById('yearLevelFilter').value,
+        section: document.getElementById('sectionFilter').value,
+        subject: document.getElementById('subjectFilter').value,
+        status: document.getElementById('statusFilter').value
+    };
+    
+    currentFilters = filters;
+    console.log('Applying filters:', filters);
+    
+    // Here you would typically make an API call to filter the data
+    // For now, we'll just log the filters
+}
+
+function searchGrades() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    console.log('Searching for:', searchTerm);
+    
+    // Filter table rows based on search term
+    const rows = document.querySelectorAll('.grade-row');
+    rows.forEach(row => {
+        const studentId = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const studentName = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+        
+        if (studentId.includes(searchTerm) || studentName.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function clearFilters() {
+    // Reset all filter inputs
+    document.getElementById('academicYearFilter').value = '';
+    document.getElementById('semesterFilter').value = '';
+    document.getElementById('departmentFilter').value = '';
+    document.getElementById('yearLevelFilter').value = '';
+    document.getElementById('sectionFilter').value = '';
+    document.getElementById('subjectFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('searchInput').value = '';
+    
+    // Show all rows
+    document.querySelectorAll('.grade-row').forEach(row => {
+        row.style.display = '';
+    });
+    
+    currentFilters = {};
+}
+
+function updateSelectedCount() {
+    const count = selectedGrades.size;
+    document.getElementById('selectedCount').textContent = count;
+}
+
+function updateActionButtons() {
+    const hasSelection = selectedGrades.size > 0;
+    document.getElementById('approveBtn').disabled = !hasSelection;
+    document.getElementById('exportBtn').disabled = !hasSelection;
+    document.getElementById('printBtn').disabled = !hasSelection;
+}
+
+function approveSelected() {
+    if (selectedGrades.size === 0) {
+        alert('Please select grades to approve.');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to approve ${selectedGrades.size} grade(s)?`)) {
+        console.log('Approving grades:', Array.from(selectedGrades));
+        // Here you would make an API call to approve the selected grades
+        alert('Grades approved successfully!');
+        selectedGrades.clear();
+        updateSelectedCount();
+        updateActionButtons();
+    }
+}
+
+function exportSelected() {
+    if (selectedGrades.size === 0) {
+        alert('Please select grades to export.');
+        return;
+    }
+    
+    console.log('Exporting grades:', Array.from(selectedGrades));
+    alert(`Exporting ${selectedGrades.size} grade(s)...`);
+}
+
+function printSelected() {
+    if (selectedGrades.size === 0) {
+        alert('Please select grades to print.');
+        return;
+    }
+    
+    console.log('Printing grades:', Array.from(selectedGrades));
+    alert(`Printing ${selectedGrades.size} grade(s)...`);
+}
+
+function viewDetails(gradeId) {
+    console.log('Viewing details for grade:', gradeId);
+    
+    // Sample grade details
+    const gradeDetails = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="font-semibold mb-2">Student Information</h4>
+                <div class="space-y-2">
+                    <p><strong>Student ID:</strong> 2024-0001</p>
+                    <p><strong>Name:</strong> Dela Cruz, Juan P.</p>
+                    <p><strong>Department:</strong> Computer Science</p>
+                    <p><strong>Year/Section:</strong> 1st Year - CS-1A</p>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-2">Subject Information</h4>
+                <div class="space-y-2">
+                    <p><strong>Subject:</strong> CS101 - Programming Fundamentals</p>
+                    <p><strong>Instructor:</strong> Prof. Juan Dela Cruz</p>
+                    <p><strong>Units:</strong> 3</p>
+                    <p><strong>Semester:</strong> 1st Semester, AY 2024-2025</p>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-2">Grade Details</h4>
+                <div class="space-y-2">
+                    <p><strong>Prelim Grade:</strong> 85.5</p>
+                    <p><strong>Midterm Grade:</strong> 88.0</p>
+                    <p><strong>Final Grade:</strong> 90.0</p>
+                    <p><strong>Final Average:</strong> 87.83</p>
+                    <p><strong>Equivalent:</strong> 2.25</p>
+                    <p><strong>Remarks:</strong> Passed</p>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-2">Status Information</h4>
+                <div class="space-y-2">
+                    <p><strong>Status:</strong> <span class="badge badge-success">Approved</span></p>
+                    <p><strong>Submitted:</strong> Dec 15, 2024 2:30 PM</p>
+                    <p><strong>Approved:</strong> Dec 16, 2024 9:15 AM</p>
+                    <p><strong>Approved By:</strong> Registrar Name</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('gradeDetailsContent').innerHTML = gradeDetails;
+    document.getElementById('gradeDetailsModal').classList.add('modal-open');
+}
+
+function closeGradeDetails() {
+    document.getElementById('gradeDetailsModal').classList.remove('modal-open');
+}
+
+function approveGrade(gradeId) {
+    if (confirm('Are you sure you want to approve this grade?')) {
+        console.log('Approving grade:', gradeId);
+        alert('Grade approved successfully!');
+    }
+}
+
+function printGrade(gradeId) {
+    console.log('Printing grade:', gradeId);
+    
+    // Create print window with grade sheet format
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Grade Sheet - CS101</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .header h1 { margin: 0; font-size: 24px; }
+                .header h2 { margin: 5px 0; font-size: 18px; color: #666; }
+                .header p { margin: 5px 0; font-size: 14px; color: #888; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f5f5f5; font-weight: bold; }
+                .center { text-align: center; }
+                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>NORZAGARAY COLLEGE</h1>
+                <h2>Grade Sheet</h2>
+                <p><strong>Subject:</strong> CS101 - Programming Fundamentals</p>
+                <p><strong>Semester:</strong> 1st Semester, AY 2024-2025</p>
+                <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Lastname, Firstname Middlename Suffix</th>
+                        <th class="center">Prelim Term</th>
+                        <th class="center">Midterm</th>
+                        <th class="center">Final Term</th>
+                        <th class="center">Final Grade</th>
+                        <th class="center">Equivalent</th>
+                        <th class="center">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2024-0001</td>
+                        <td>Dela Cruz, Juan P.</td>
+                        <td class="center">85.5</td>
+                        <td class="center">88.0</td>
+                        <td class="center">90.0</td>
+                        <td class="center">87.83</td>
+                        <td class="center">2.25</td>
+                        <td class="center">Passed</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="footer">
+                <p>Generated on ${new Date().toLocaleString()}</p>
+            </div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function exportToExcel() {
+    console.log('Exporting to Excel...');
+    alert('Exporting to Excel...');
+}
+
+function exportToPDF() {
+    console.log('Exporting to PDF...');
+    alert('Exporting to PDF...');
+}
+
+function printAllGrades() {
+    console.log('Printing all grades...');
+    alert('Printing all grades...');
+}
+</script>
+{% endblock %}

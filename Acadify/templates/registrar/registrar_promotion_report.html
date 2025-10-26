@@ -1,0 +1,1152 @@
+{% extends "common/base.html" %}
+
+{% block title %}Promotion Report - Acadify{% endblock %}
+
+{% block content %}
+<style>
+@media print {
+    @page {
+        margin: 0.5in;
+        size: 11in 8.5in;
+        orientation: landscape;
+    }
+    
+    /* Hide everything by default */
+    body * {
+        visibility: hidden;
+    }
+    
+    /* Only show print-specific elements */
+    .print-header,
+    .print-header *,
+    .print-table-container,
+    .print-table-container *,
+    .print-table,
+    .print-table *,
+    .print-footer,
+    .print-footer * {
+        visibility: visible !important;
+    }
+    
+    /* Hide all form elements and UI components */
+    .card,
+    .card-body,
+    .btn,
+    .badge,
+    .stats,
+    .form-control,
+    .join,
+    .input,
+    .select,
+    .label,
+    .shadow,
+    .shadow-xl,
+    .shadow-lg,
+    .bg-base-100,
+    .bg-base-200,
+    .bg-base-300,
+    .border-t,
+    .border-base-300,
+    .overflow-x-auto,
+    .table-zebra,
+    .card-title,
+    .no-print,
+    section,
+    .min-h-screen,
+    .py-8,
+    .max-w-7xl,
+    .mx-auto,
+    .px-4,
+    .sm\\:px-6,
+    .lg\\:px-8,
+    .mb-8,
+    .flex,
+    .items-center,
+    .gap-4,
+    .text-3xl,
+    .font-bold,
+    .text-base-content,
+    .tracking-tight,
+    .text-base-content\\/60,
+    .mt-1,
+    .grid,
+    .grid-cols-1,
+    .md\\:grid-cols-3,
+    .gap-6,
+    .mb-6,
+    .shadow-xl,
+    .printable-content {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Show only print elements */
+    .print-header {
+        display: block !important;
+        visibility: visible !important;
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .print-table-container {
+        display: block !important;
+        visibility: visible !important;
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        width: 100%;
+        background: white !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        text-align: center;
+    }
+    
+    .print-table {
+        display: table !important;
+        visibility: visible !important;
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        width: 100%;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .print-footer {
+        display: flex !important;
+        visibility: visible !important;
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Print Header - Ultra Compact for Single Page */
+    .print-header {
+        text-align: center !important;
+        margin: 0 0 8px 0 !important;
+        padding: 0 !important;
+        font-family: 'Times New Roman', serif;
+        background: white !important;
+        border: none;
+        box-shadow: none;
+        page-break-inside: avoid;
+        page-break-after: avoid;
+        width: 100%;
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+    }
+    
+    .print-logo-section {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 4px;
+        background: white !important;
+    }
+    
+    .print-logo {
+        width: 60px;
+        height: 60px;
+        background: white !important;
+        display: inline-block;
+        margin: 0 auto;
+    }
+    
+    .print-header-content {
+        width: 100%;
+        text-align: center;
+        background: white !important;
+    }
+    
+    .print-college-name {
+        font-size: 12pt;
+        font-weight: bold;
+        margin: 0 0 2px 0 !important;
+        padding: 0 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: black !important;
+        background: white !important;
+    }
+    .print-address {
+        font-size: 9pt;
+        margin: 0 0 3px 0 !important;
+        padding: 0 !important;
+        color: black !important;
+        background: white !important;
+    }
+    .print-department {
+        font-size: 10pt;
+        font-weight: bold;
+        margin: 0 0 1px 0 !important;
+        padding: 0 !important;
+        color: black !important;
+        background: white !important;
+    }
+    .print-section {
+        font-size: 10pt;
+        font-weight: bold;
+        margin: 0 0 3px 0 !important;
+        padding: 0 !important;
+        color: black !important;
+        background: white !important;
+    }
+    .print-report-title {
+        font-size: 10pt;
+        font-weight: bold;
+        margin: 0 0 1px 0 !important;
+        padding: 0 !important;
+        color: black !important;
+        background: white !important;
+    }
+    .print-semester-year {
+        font-size: 9pt;
+        margin: 0 0 0 0 !important;
+        padding: 0 !important;
+        color: black !important;
+        background: white !important;
+    }
+    
+    /* Print Table - Ultra Compact for Single Page */
+    .print-table {
+        width: 100%;
+        max-width: 100%;
+        border-collapse: collapse;
+        font-size: 8pt;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        font-family: 'Times New Roman', serif;
+        background: white !important;
+        border: 1px solid #000;
+        box-shadow: none;
+        page-break-inside: avoid;
+        page-break-before: avoid;
+        table-layout: fixed;
+        overflow: hidden;
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+    }
+    /* Ensure proper table structure */
+    .print-table thead {
+        display: table-header-group !important;
+    }
+    
+    .print-table tbody {
+        display: table-row-group !important;
+    }
+    
+    .print-table tr {
+        display: table-row !important;
+    }
+    
+    .print-table th,
+    .print-table td {
+        display: table-cell !important;
+        border: 1px solid #000;
+        padding: 1px 1px;
+        text-align: center;
+        vertical-align: middle;
+        background: white !important;
+        color: black !important;
+        box-shadow: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        word-wrap: break-word;
+    }
+    /* Ensure Total Units header is properly aligned */
+    .print-th-units {
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
+        font-size: 8pt !important;
+        color: black !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        vertical-align: middle !important;
+        position: relative !important;
+    }
+    
+    .print-td-units {
+        font-size: 8pt !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        color: black !important;
+        vertical-align: middle !important;
+        background: white !important;
+    }
+    
+    /* Ensure Student ID is properly formatted */
+    .print-th-student-no {
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
+        font-size: 8pt !important;
+        font-family: 'Times New Roman', serif !important;
+        color: black !important;
+        text-align: center !important;
+    }
+    
+    .print-td-student-no {
+        font-family: 'Times New Roman', serif !important;
+        font-size: 8pt !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        color: black !important;
+    }
+    
+    /* Compact column widths for single page */
+    .print-th-no, .print-td-no {
+        width: 30px;
+        min-width: 30px;
+        max-width: 30px;
+        text-align: center;
+        font-size: 8pt;
+    }
+    .print-th-student-no, .print-td-student-no {
+        width: 75px;
+        min-width: 75px;
+        max-width: 75px;
+        text-align: center;
+        font-size: 8pt;
+        font-weight: bold;
+        font-family: 'Times New Roman', serif;
+    }
+    .print-th-student-name, .print-td-student-name {
+        width: 140px;
+        min-width: 140px;
+        max-width: 140px;
+        text-align: left;
+        font-size: 8pt;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    .print-th-subject, .print-td-grade {
+        width: 55px;
+        min-width: 55px;
+        max-width: 55px;
+        font-size: 8pt;
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    /* Ensure subjects header doesn't interfere with other columns */
+    .print-th-subjects {
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
+        font-size: 8pt !important;
+        color: black !important;
+        text-align: center !important;
+    }
+    .print-th-gwa, .print-td-gwa {
+        width: 45px;
+        min-width: 45px;
+        max-width: 45px;
+        font-weight: bold;
+        font-size: 8pt;
+        text-align: center;
+    }
+    .print-th-units, .print-td-units {
+        width: 80px;
+        min-width: 80px;
+        max-width: 80px;
+        text-align: center;
+        font-size: 8pt;
+        font-weight: bold;
+        vertical-align: middle;
+    }
+    .print-th-remarks, .print-td-remarks {
+        width: 70px;
+        min-width: 70px;
+        max-width: 70px;
+        font-size: 8pt;
+        text-align: center;
+    }
+    
+    /* Responsive breakpoints for table */
+    @media print and (max-width: 7in) {
+        .print-table {
+            font-size: 6px;
+        }
+        .print-table th,
+        .print-table td {
+            padding: 1px;
+        }
+    }
+    
+    @media print and (min-width: 8in) {
+        .print-table {
+            font-size: 9px;
+        }
+        .print-table th,
+        .print-table td {
+            padding: 4px 3px;
+        }
+    }
+    
+    /* Print Footer - Empty (No signature section) */
+    .print-footer {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Page break handling - Force single page */
+    .print-table tbody tr {
+        page-break-inside: avoid;
+    }
+    
+    .print-table-container {
+        page-break-inside: avoid;
+        page-break-before: avoid;
+    }
+    
+    /* Force everything to stay on one page */
+    .print-header,
+    .print-table-container,
+    .print-footer {
+        page-break-inside: avoid !important;
+        page-break-before: avoid !important;
+        page-break-after: avoid !important;
+    }
+    
+    /* Ensure table rows don't break */
+    .print-table tbody tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    
+    /* Ultra compact spacing for single page */
+    .print-table-container {
+        margin: 0 0 5px 0 !important;
+    }
+    
+    /* Ensure proper spacing */
+    .print-table tbody tr:nth-child(even) {
+        background-color: #f8f8f8 !important;
+    }
+    
+    /* Remove ALL styling and backgrounds */
+    * {
+        box-shadow: none !important;
+        background: white !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Force clean appearance - Professional Academic Format */
+    body {
+        background: white !important;
+        color: black !important;
+        font-family: 'Times New Roman', serif !important;
+        line-height: 1.2;
+        display: block !important;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+        position: static !important;
+    }
+    
+    /* Responsive spacing adjustments */
+    @media print and (max-width: 6in) {
+        .print-header {
+            margin: 0 0 8px 0 !important;
+        }
+        .print-logo-container {
+            margin: 0 0 4px 0 !important;
+        }
+    }
+    
+    @media print and (min-width: 8in) {
+        .print-header {
+            margin: 0 0 15px 0 !important;
+        }
+        .print-logo-container {
+            margin: 0 0 8px 0 !important;
+        }
+    }
+    
+    /* Adaptive content overflow handling */
+    .print-table-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: visible;
+        overflow-y: visible;
+        display: block !important;
+        visibility: visible !important;
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+    }
+    
+    /* Responsive text wrapping */
+    .print-table td {
+        word-break: break-word;
+        hyphens: auto;
+    }
+    
+    /* Adaptive page breaks */
+    @media print {
+        .print-table tbody tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        
+        .print-table thead {
+            display: table-header-group;
+        }
+        
+        .print-table tbody tr:first-child {
+            page-break-before: avoid;
+        }
+    }
+    
+    /* Remove any remaining badges or colored elements */
+    .badge {
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        font-weight: bold;
+        color: black !important;
+        box-shadow: none !important;
+    }
+    .badge-success,
+    .badge-warning,
+    .badge-error,
+    .badge-ghost {
+        color: black !important;
+        background: white !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+<section class="min-h-screen py-8 bg-base-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-base-content tracking-tight">Promotion Report</h1>
+                    <p class="text-base-content/60 mt-1">Student promotion board and academic standing</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <div class="badge badge-primary badge-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                            </svg>
+                            Current Semester: {{ current_semester }}
+                        </div>
+                        <div class="badge badge-secondary badge-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" x2="16" y1="2" y2="6"/>
+                                <line x1="8" x2="8" y1="2" y2="6"/>
+                                <line x1="3" x2="21" y1="10" y2="10"/>
+                            </svg>
+                            Latest Academic Year: {{ current_academic_year }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Filter Section -->
+         <div class="card bg-base-100 shadow-xl mb-6 no-print">
+            <div class="card-body">
+                <!-- Header -->
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-secondary/10 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"/>
+                            <path d="M7 12h10"/>
+                            <path d="M10 18h4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Filters & Search</h2>
+                        <p class="text-sm opacity-60">Filter and search promotion data</p>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                 <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <div class="join flex-1">
+                        <input class="join-item input input-bordered flex-1" placeholder="Search students by name, ID, or other details..."/>
+                        <button class="join-item btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.3-4.3"/>
+                            </svg>
+                        </button>
+                    </div>
+                     <button id="apply_filters_btn" class="btn btn-primary w-full sm:w-auto" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                         <span class="hidden sm:inline">Apply</span>
+                         <span class="sm:hidden">Apply</span>
+                    </button>
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                    <!-- Academic Year Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Academic Year</span>
+                        </label>
+                        <select id="academic_year_filter" class="select select-bordered select-sm">
+                             <option value="">Select Academic Year</option>
+                            {% for year in academic_years %}
+                             <option value="{{ year }}" {% if year == current_filter_academic_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Semester Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Semester</span>
+                        </label>
+                        <select id="semester_filter" class="select select-bordered select-sm">
+                            <option value="">Select Semester</option>
+                            <option value="1" {% if current_filter_semester == '1' %}selected{% endif %}>1st Semester</option>
+                            <option value="2" {% if current_filter_semester == '2' %}selected{% endif %}>2nd Semester</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Department Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Department</span>
+                        </label>
+                        <select id="department_filter" class="select select-bordered select-sm">
+                            <option value="">Select Department</option>
+                            {% for department in available_departments %}
+                            <option value="{{ department }}" {% if department == current_filter_department %}selected{% endif %}>{{ department }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Year Level Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Year Level</span>
+                        </label>
+                        <select id="year_level_filter" class="select select-bordered select-sm">
+                            <option value="">Select Year Level</option>
+                            {% for year_level in available_year_levels %}
+                            <option value="{{ year_level }}" {% if year_level|string == current_filter_year_level %}selected{% endif %}>
+                                {% if year_level == 1 %}1st Year
+                                {% elif year_level == 2 %}2nd Year
+                                {% elif year_level == 3 %}3rd Year
+                                {% elif year_level == 4 %}4th Year
+                                {% elif year_level == 5 %}5th Year
+                                {% else %}{{ year_level }} Year{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Section Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Section</span>
+                        </label>
+                        <select id="section_filter" class="select select-bordered select-sm">
+                            <option value="">Select Section</option>
+                            {% for section in available_sections %}
+                            <option value="{{ section }}" {% if section == current_filter_section %}selected{% endif %}>{{ section }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+         {% if filters_applied %}
+        <!-- Promotion Board Section -->
+         <div class="card bg-base-100 shadow-xl printable-content">
+            <div class="card-body">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-primary/10 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Promotion Board</h2>
+                     </div>
+                </div>
+
+                 <!-- Print Header (Hidden on screen, visible in print) -->
+                 <div class="print-header" style="display: none;">
+                     <div class="print-logo-section">
+                         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Norzagaray College Logo" class="print-logo">
+                     </div>
+                     <div class="print-header-content">
+                         <div class="print-college-name">NORZAGARAY COLLEGE</div>
+                         <div class="print-address">Municipal Compound, Poblacion Norzagaray Bulacan</div>
+                         {% if current_filter_department %}
+                         <div class="print-department">{{ current_filter_department }}</div>
+                         {% endif %}
+                         {% if current_filter_section %}
+                         <div class="print-section">{{ current_filter_section }}</div>
+                         {% endif %}
+                         <div class="print-report-title">SUMMARY FOR PROMOTION BOARD</div>
+                         <div class="print-semester-year">
+                             {% if current_semester == 1 %}1st{% elif current_semester == 2 %}2nd{% endif %} Semester, Academic Year {{ current_academic_year }}
+                        </div>
+                     </div>
+                </div>
+
+                 <!-- Promotion Board Table -->
+                 <div class="card bg-base-100">
+                     <div class="card-body p-0">
+                <div class="overflow-x-auto">
+                    {% if promotion_data %}
+                                 <!-- Print Table (Hidden on screen, visible in print) -->
+                                 <div class="print-table-container" style="display: none;">
+                                     <table class="print-table">
+                                     <thead>
+                                         <tr>
+                                             <th rowspan="2" class="print-th-no">NO</th>
+                                             <th rowspan="2" class="print-th-student-no" style="font-size: 8pt; font-weight: bold; font-family: 'Times New Roman', serif;">STUDENT NO.</th>
+                                             <th rowspan="2" class="print-th-student-name">STUDENT NAME</th>
+                                             {% if all_subjects %}
+                                                 <th colspan="{{ all_subjects|length }}" class="print-th-subjects">SUBJECTS ENROLLED</th>
+                                             {% endif %}
+                                             <th rowspan="2" class="print-th-gwa">GWA</th>
+                                             <th rowspan="2" class="print-th-units" style="font-size: 8pt; font-weight: bold;">TOTAL UNITS</th>
+                                             <th rowspan="2" class="print-th-remarks">REMARKS</th>
+                                         </tr>
+                                         <tr>
+                                             {% for subject in all_subjects %}
+                                                 <th class="print-th-subject">
+                                                     <div style="font-weight: bold; font-size: 7pt;">{{ subject.subject_code }}</div>
+                                                     <div style="font-size: 6pt;">{{ subject.units }} Units</div>
+                                                 </th>
+                                             {% endfor %}
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                         {% for data in promotion_data %}
+                                         {% set student = data.student %}
+                                         <tr>
+                                             <td class="print-td-no">{{ loop.index }}</td>
+                                             <td class="print-td-student-no">{{ student.student_id or 'N/A' }}</td>
+                                             <td class="print-td-student-name">{{ student.last_name }}{% if student.last_name and student.first_name %}, {% endif %}{{ student.first_name }}{% if student.middle_name %} {{ student.middle_name }}{% endif %}{% if student.suffix %} {{ student.suffix }}{% endif %}</td>
+                                             {% for subject in all_subjects %}
+                                                 <td class="print-td-grade">
+                                                     {% if data.subject_grades[subject.subject_code] is not none %}
+                                                         {{ "%.2f"|format(data.subject_grades[subject.subject_code]) }}
+                                                     {% else %}
+                                                         —
+                                                     {% endif %}
+                                                 </td>
+                                             {% endfor %}
+                                             <td class="print-td-gwa">
+                                                 {% if data.gwa is not none %}
+                                                     {{ "%.2f"|format(data.gwa) }}
+                                                 {% else %}
+                                                     —
+                                                 {% endif %}
+                                             </td>
+                                             <td class="print-td-units">
+                                                 {% set table_total_units = [] %}
+                                                 {% for subject in all_subjects %}
+                                                     {% if data.subject_grades[subject.subject_code] is not none %}
+                                                         {% set _ = table_total_units.append(subject.units) %}
+                                                     {% endif %}
+                                                 {% endfor %}
+                                                 {{ table_total_units|sum if table_total_units|length > 0 else '—' }}
+                                             </td>
+                                             <td class="print-td-remarks">{{ data.remarks or 'Pending' }}</td>
+                                         </tr>
+                                         {% endfor %}
+                                     </tbody>
+                                     </table>
+                                 </div>
+                                 
+                                 <!-- Screen Table (Visible on screen, hidden in print) -->
+                        <table class="table table-zebra w-full">
+                            <thead>
+                                        <!-- First Header Row -->
+                                        <tr class="bg-base-200">
+                                            <th class="text-center font-bold">NO</th>
+                                            <th class="text-center font-bold">Student No.</th>
+                                            <th class="text-center font-bold">Student Name</th>
+                                            {% if all_subjects %}
+                                                <th class="text-center font-bold" colspan="{{ all_subjects|length }}">Subjects Enrolled</th>
+                                            {% endif %}
+                                            <th class="text-center font-bold">GWA</th>
+                                            <th class="text-center font-bold">Total Units</th>
+                                            <th class="text-center font-bold">Remarks</th>
+                                        </tr>
+                                        <!-- Second Header Row -->
+                                        <tr class="bg-base-300">
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            {% for subject in all_subjects %}
+                                                <th class="text-center">
+                                                    <div class="font-bold text-sm">{{ subject.subject_code }}</div>
+                                                    <div class="text-xs opacity-70">{{ subject.units }} Units</div>
+                                                    <div class="text-xs opacity-50 mt-1">
+                                                        {% if subject_instructors_header[subject.subject_code] %}
+                                                            {{ subject_instructors_header[subject.subject_code] }}
+                                                        {% else %}
+                                                            TBA
+                                                        {% endif %}
+                                                    </div>
+                                                </th>
+                                            {% endfor %}
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in promotion_data %}
+                                {% set student = data.student %}
+                                <tr class="hover">
+                                            <!-- Row Number -->
+                                            <td class="text-center font-bold">{{ loop.index }}</td>
+                                            
+                                            <!-- Student Number -->
+                                            <td class="text-center font-medium">{{ student.student_id or 'N/A' }}</td>
+                                            
+                                            <!-- Student Name -->
+                                    <td>
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar placeholder">
+                                                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 text-white">
+                                                            <span class="text-xs font-bold">{{ student.first_name[0] if student.first_name else 'S' }}{{ student.last_name[0] if student.last_name else 'T' }}</span>
+                                                </div>
+                                            </div>
+                                                    <div>
+                                                        <div class="font-medium">{{ student.last_name }}{% if student.last_name and student.first_name %}, {% endif %}{{ student.first_name }}{% if student.middle_name %} {{ student.middle_name }}{% endif %}{% if student.suffix %} {{ student.suffix }}{% endif %}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                            
+                                            <!-- Subject Grades -->
+                                            {% for subject in all_subjects %}
+                                    <td class="text-center">
+                                                    {% if data.subject_grades[subject.subject_code] is not none %}
+                                                        {% set grade = data.subject_grades[subject.subject_code] %}
+                                                        {% if grade <= 1.75 %}
+                                                            <div class="badge badge-success badge-sm font-bold">{{ "%.2f"|format(grade) }}</div>
+                                                        {% elif grade <= 2.5 %}
+                                                            <div class="badge badge-warning badge-sm font-bold">{{ "%.2f"|format(grade) }}</div>
+                                                        {% elif grade <= 3.0 %}
+                                                            <div class="badge badge-error badge-sm font-bold">{{ "%.2f"|format(grade) }}</div>
+                                                        {% else %}
+                                                            <div class="badge badge-error badge-sm font-bold">{{ "%.2f"|format(grade) }}</div>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <div class="badge badge-ghost">—</div>
+                                                    {% endif %}
+                                    </td>
+                                            {% endfor %}
+                                            
+                                            <!-- GWA -->
+                                    <td class="text-center">
+                                                {% if data.gwa is not none %}
+                                                    {% if data.gwa <= 1.75 %}
+                                                        <div class="badge badge-success badge-lg font-bold">{{ "%.2f"|format(data.gwa) }}</div>
+                                                    {% elif data.gwa <= 2.5 %}
+                                                        <div class="badge badge-warning badge-lg font-bold">{{ "%.2f"|format(data.gwa) }}</div>
+                                                    {% elif data.gwa <= 3.0 %}
+                                                        <div class="badge badge-error badge-lg font-bold">{{ "%.2f"|format(data.gwa) }}</div>
+                                                    {% else %}
+                                                        <div class="badge badge-error badge-lg font-bold">{{ "%.2f"|format(data.gwa) }}</div>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <div class="badge badge-ghost">—</div>
+                                                {% endif %}
+                                    </td>
+                                            
+                                            <!-- Total Units -->
+                                            <td class="text-center font-medium">
+                                                {% set screen_table_total_units = [] %}
+                                                {% for subject in all_subjects %}
+                                                    {% if data.subject_grades[subject.subject_code] is not none %}
+                                                        {% set _ = screen_table_total_units.append(subject.units) %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {{ screen_table_total_units|sum if screen_table_total_units|length > 0 else '—' }}
+                                            </td>
+                                            
+                                            <!-- Remarks -->
+                                    <td class="text-center">
+                                                {% if data.remarks == 'Passed' %}
+                                                    <div class="badge badge-success gap-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                        Passed
+                                            </div>
+                                                {% elif data.remarks == 'Failed' %}
+                                                    <div class="badge badge-error gap-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M18 6L6 18M6 6l12 12"/>
+                                                </svg>
+                                                        Failed
+                                                    </div>
+                                                {% elif data.remarks == 'No Grades' %}
+                                                    <div class="badge badge-ghost gap-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                        </svg>
+                                                        No Grades
+                                            </div>
+                                        {% else %}
+                                                    <div class="badge badge-ghost">{{ data.remarks or 'Pending' }}</div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                         </div>
+                         
+                         <!-- Print Footer (Hidden on screen, visible in print) -->
+                         <div class="print-footer" style="display: none;">
+                         </div>
+                         
+                         <!-- Table Footer -->
+                         <div class="card-body pt-4 border-t border-base-300 no-print">
+                             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                                 <div class="text-sm text-base-content/60">
+                                     <span class="font-medium">{{ promotion_data|length }}</span> students for 
+                                     <span class="font-medium">Semester {{ current_semester }}</span>, 
+                                     <span class="font-medium">AY {{ current_academic_year }}</span>
+                                 </div>
+                                 
+                                 <!-- Mobile Responsive Info -->
+                                 <div class="text-xs text-base-content/50 sm:hidden">
+                                     <p>Scroll horizontally to view all subjects</p>
+                            </div>
+                                 
+                                 <!-- Print Button -->
+                                 <button id="print_report_btn" class="btn btn-primary btn-sm gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                         <polyline points="6,9 6,2 18,2 18,9"/>
+                                         <path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/>
+                                         <rect x="6" y="14" width="12" height="8"/>
+                                     </svg>
+                                     Print Promotion Board
+                                 </button>
+                                 
+                                 <!-- Pagination -->
+                                 <div class="flex items-center gap-2">
+                                     <span class="text-sm text-base-content/60">Page</span>
+                            <div class="join">
+                                         <button class="join-item btn btn-sm btn-outline">«</button>
+                                         <button class="join-item btn btn-sm btn-primary">1</button>
+                                         <button class="join-item btn btn-sm btn-outline">2</button>
+                                         <button class="join-item btn btn-sm btn-outline">3</button>
+                                         <button class="join-item btn btn-sm btn-outline">»</button>
+                                     </div>
+                                 </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <div class="p-4 bg-base-200 rounded-full w-fit mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">No Promotion Data Available</h3>
+                            <p class="opacity-60">No student promotion data available for the selected filters.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+         {% else %}
+         <!-- Privacy Message - No Filters Applied -->
+         <div class="card bg-base-100 shadow-xl no-print">
+            <div class="card-body text-center py-16">
+                <div class="p-4 bg-base-200 rounded-full w-fit mx-auto mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-base-content mb-4">Privacy Protection</h3>
+                <p class="text-base-content/70 mb-6 max-w-md mx-auto">
+                    Student promotion data is protected for privacy. Please select your desired filters above and click Apply to view the promotion board.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all filter elements
+    const academicYearFilter = document.getElementById('academic_year_filter');
+    const semesterFilter = document.getElementById('semester_filter');
+    const departmentFilter = document.getElementById('department_filter');
+    const yearLevelFilter = document.getElementById('year_level_filter');
+    const sectionFilter = document.getElementById('section_filter');
+    
+    // Function to update URL and reload page with filters
+    function applyFilters() {
+        console.log('Apply button clicked!'); // Debug log
+        const semester = semesterFilter.value;
+        const academicYear = academicYearFilter.value;
+        const department = departmentFilter.value;
+        const yearLevel = yearLevelFilter.value;
+        const section = sectionFilter.value;
+        
+        // Build URL with current path and filter parameters
+        const url = new URL(window.location);
+        
+        // Set or remove parameters based on values
+        const filters = {
+            'semester': semester,
+            'academic_year': academicYear,
+            'department': department,
+            'year_level': yearLevel,
+            'section': section
+        };
+        
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value) {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
+            }
+        });
+        
+        // Add applied parameter to indicate Apply button was clicked
+        url.searchParams.set('applied', 'true');
+        
+        console.log('Redirecting to:', url.toString()); // Debug log
+        
+        // Reload page with new filters
+        window.location.href = url.toString();
+    }
+    
+    // Restore dropdown values from URL parameters
+    function restoreDropdownValues() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Restore semester
+        const semester = urlParams.get('semester');
+        if (semester && semesterFilter) {
+            semesterFilter.value = semester;
+        }
+        
+        // Restore academic year
+        const academicYear = urlParams.get('academic_year');
+        if (academicYear && academicYearFilter) {
+            academicYearFilter.value = academicYear;
+        }
+        
+        // Restore department
+        const department = urlParams.get('department');
+        if (department && departmentFilter) {
+            departmentFilter.value = department;
+        }
+        
+        // Restore year level
+        const yearLevel = urlParams.get('year_level');
+        if (yearLevel && yearLevelFilter) {
+            yearLevelFilter.value = yearLevel;
+        }
+        
+        // Restore section
+        const section = urlParams.get('section');
+        if (section && sectionFilter) {
+            sectionFilter.value = section;
+        }
+    }
+    
+     // Call restore function when page loads
+     restoreDropdownValues();
+     
+     // Get Apply button reference
+     const applyButton = document.getElementById('apply_filters_btn');
+     
+     // Function to check if all required dropdowns are filled
+     function validateDropdowns() {
+         const academicYear = academicYearFilter.value;
+         const semester = semesterFilter.value;
+         const department = departmentFilter.value;
+         const yearLevel = yearLevelFilter.value;
+         const section = sectionFilter.value;
+         
+         // Check if all required fields are filled
+         const allFilled = academicYear && semester && department && yearLevel && section;
+         
+         // Enable/disable Apply button
+         if (allFilled) {
+             applyButton.disabled = false;
+             applyButton.classList.remove('btn-disabled');
+         } else {
+             applyButton.disabled = true;
+             applyButton.classList.add('btn-disabled');
+         }
+     }
+     
+     // Add event listeners to all dropdowns for validation
+     academicYearFilter.addEventListener('change', validateDropdowns);
+     semesterFilter.addEventListener('change', validateDropdowns);
+     departmentFilter.addEventListener('change', validateDropdowns);
+     yearLevelFilter.addEventListener('change', validateDropdowns);
+     sectionFilter.addEventListener('change', validateDropdowns);
+     
+     // Initial validation check
+     validateDropdowns();
+     
+     // Add event listener for Apply button
+     console.log('Apply button found:', applyButton); // Debug log
+     if (applyButton) {
+         applyButton.addEventListener('click', applyFilters);
+         console.log('Event listener added to Apply button'); // Debug log
+     } else {
+         console.error('Apply button not found!'); // Debug log
+     }
+     
+     // Add event listener for Print button
+     const printButton = document.getElementById('print_report_btn');
+     if (printButton) {
+         printButton.addEventListener('click', function() {
+             // Only allow printing if filters are applied and data is available
+             if ({{ 'true' if filters_applied else 'false' }}) {
+                 // Show print preview and trigger print dialog
+                 setTimeout(function() {
+                     window.print();
+                 }, 100);
+             } else {
+                 alert('Please apply filters first to view the promotion report before printing.');
+             }
+         });
+     }
+    
+});
+</script>
+
+{% endblock %}

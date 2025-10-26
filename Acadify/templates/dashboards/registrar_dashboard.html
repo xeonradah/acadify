@@ -1,0 +1,349 @@
+{% extends "common/base.html" %}
+
+{% block title %}Registrar Dashboard - Acadify{% endblock %}
+
+{% block content %}
+<section class="min-h-screen py-8 bg-base-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" x2="8" y1="13" y2="13"/>
+                        <line x1="16" x2="8" y1="17" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-base-content tracking-tight">Registrar Dashboard</h1>
+                    <p class="text-base-content/60 mt-1">Manage student records and academic data</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <div class="badge badge-primary badge-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                            </svg>
+                            Current Semester: {{ current_semester }}
+                        </div>
+                        <div class="badge badge-secondary badge-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" x2="16" y1="2" y2="6"/>
+                                <line x1="8" x2="8" y1="2" y2="6"/>
+                                <line x1="3" x2="21" y1="10" y2="10"/>
+                            </svg>
+                            Latest Academic Year: {{ current_academic_year }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Dean's List Students -->
+            <div class="stats shadow">
+                <div class="stat">
+                    <div class="stat-figure text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Dean's List Students</div>
+                    <div class="stat-value text-primary">{{ students|length }}</div>
+                    <div class="stat-desc">Academic achievers</div>
+                </div>
+            </div>
+
+            <!-- Total Instructors -->
+            <div class="stats shadow">
+                <div class="stat">
+                    <div class="stat-figure text-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Total Instructors</div>
+                    <div class="stat-value text-secondary">{{ instructors|length }}</div>
+                    <div class="stat-desc">Active instructors</div>
+                </div>
+            </div>
+
+            <!-- Total Subjects -->
+            <div class="stats shadow">
+                <div class="stat">
+                    <div class="stat-figure text-accent">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-title">Total Subjects</div>
+                    <div class="stat-value text-accent">{{ subjects|length }}</div>
+                    <div class="stat-desc">Active subjects</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-primary/10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="card-title">Dean's List Students</h2>
+                            <p class="text-sm opacity-60">Academic achievers for Semester {{ current_semester }}, Academic Year {{ current_academic_year }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="join">
+                            <input id="searchInput" class="join-item input input-bordered" placeholder="Search students..." type="text"/>
+                            <button class="join-item btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.3-4.3"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Academic Year Filter -->
+                        <div class="form-control">
+                            <label class="label label-text-alt text-xs">Academic Year</label>
+                            <select id="academic_year_filter" class="select select-bordered select-sm w-40" disabled>
+                                <option value="{{ academic_years[0] }}" selected>{{ academic_years[0] }}</option>
+                            </select>
+                            <label class="label label-text-alt text-xs text-info">Latest Academic Year</label>
+                        </div>
+                        
+                        <!-- Semester Filter -->
+                        <div class="form-control">
+                            <label class="label label-text-alt text-xs">Semester</label>
+                            <select id="semester_filter" class="select select-bordered select-sm w-32">
+                                <option value="">All</option>
+                                <option value="1" {% if current_semester == 1 %}selected{% endif %}>1st Sem</option>
+                                <option value="2" {% if current_semester == 2 %}selected{% endif %}>2nd Sem</option>
+                            </select>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    {% if students %}
+                        
+                        <table class="table table-zebra w-full">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Rank</th>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Year Level</th>
+                                    <th class="text-center">GWA</th>
+                                    <th class="text-center">Section</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student_data in students[:10] %}
+                                {% set student = student_data.student %}
+                                <tr class="hover">
+                                    <td class="text-center font-bold text-primary">
+                                        <div class="flex items-center justify-center gap-2">
+                                            {% if student_data.rank <= 3 %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                                </svg>
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                                    <path d="M4 22h16"/>
+                                                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21l-2.99 1.42c-.53.24-1.04.24-1.57 0L2.97 18.21C2.47 17.98 2 17.55 2 17v-2.34"/>
+                                                    <path d="M14 14.66V17c0 .55.47.98.97 1.21l2.99 1.42c.53.24 1.04.24 1.57 0L21.03 18.21c.5-.23.97-.66.97-1.21v-2.34"/>
+                                                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                                </svg>
+                                            {% endif %}
+                                            <span>#{{ student_data.rank }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="font-medium">{{ student.student_id or 'N/A' }}</td>
+                                    <td>
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar placeholder">
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white">
+                                                    <span class="text-sm font-bold">{{ student.first_name[0] }}{{ student.last_name[0] }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="font-medium">
+                                                {{ student.last_name }}{% if student.last_name and student.first_name %}, {% endif %}{{ student.first_name }}{% if student.middle_name %} {{ student.middle_name }}{% endif %}{% if student.suffix %} {{ student.suffix }}{% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-outline">
+                                            {{ student.department or 'N/A' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                                            </svg>
+                                            {{ student.year_level or 'N/A' }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="badge badge-success badge-lg font-bold">
+                                            {{ "%.2f"|format(student_data.gwa) }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="text-sm font-medium">
+                                            {{ student.section or 'N/A' }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('view_student_record', student_id=student.id) }}" 
+                                           class="flex items-center justify-center gap-1 px-3 py-2 border-2 border-primary text-primary hover:bg-primary hover:text-primary-content rounded-lg transition-all duration-200 hover:shadow-md"
+                                           title="View student record">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                            </svg>
+                                            <span class="text-sm font-medium">View Record</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="flex justify-between items-center mt-6">
+                            <div class="text-sm opacity-60">
+                                Showing 1-10 of {{ students|length }} Dean's List students for Semester {{ current_semester }}, AY {{ current_academic_year }}
+                            </div>
+                            <div class="join">
+                                <button class="join-item btn btn-sm">«</button>
+                                <button class="join-item btn btn-sm btn-active">1</button>
+                                <button class="join-item btn btn-sm">2</button>
+                                <button class="join-item btn btn-sm">3</button>
+                                <button class="join-item btn btn-sm">»</button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <div class="p-4 bg-base-200 rounded-full w-fit mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold">No Dean's List Students</h3>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const academicYearFilter = document.getElementById('academic_year_filter');
+    const semesterFilter = document.getElementById('semester_filter');
+    const searchInput = document.getElementById('searchInput');
+    
+    // Function to update URL and reload page with filters
+    function applyFilters() {
+        const semester = semesterFilter.value;
+        
+        // Build URL with current path and filter parameters
+        const url = new URL(window.location);
+        
+        if (semester) {
+            url.searchParams.set('semester', semester);
+        } else {
+            url.searchParams.delete('semester');
+        }
+        
+        // Reload page with new filters
+        window.location.href = url.toString();
+    }
+    
+    // Add event listeners for filter changes (only semester since academic year is fixed)
+    semesterFilter.addEventListener('change', applyFilters);
+    
+    // Search functionality
+    function performSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const tableRows = document.querySelectorAll('tbody tr');
+        
+        tableRows.forEach(row => {
+            const studentId = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+            const studentName = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+            const department = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+            const yearLevel = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
+            const section = row.querySelector('td:nth-child(7)')?.textContent.toLowerCase() || '';
+            
+            const matchesSearch = studentId.includes(searchTerm) || 
+                                studentName.includes(searchTerm) || 
+                                department.includes(searchTerm) || 
+                                yearLevel.includes(searchTerm) || 
+                                section.includes(searchTerm);
+            
+            row.style.display = matchesSearch ? '' : 'none';
+        });
+    }
+    
+    // Add event listener for search input
+    searchInput.addEventListener('input', performSearch);
+    
+    // Add event listener for search button
+    document.querySelector('.join-item.btn.btn-primary').addEventListener('click', function(e) {
+        e.preventDefault();
+        performSearch();
+    });
+    
+    // Add event listener for Enter key in search input
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+    
+    // Add loading state during filter changes
+    function showLoadingState() {
+        const tableContainer = document.querySelector('.overflow-x-auto');
+        if (tableContainer) {
+            tableContainer.innerHTML = `
+                <div class="flex justify-center items-center py-12">
+                    <div class="flex flex-col items-center gap-4">
+                        <span class="loading loading-spinner loading-lg text-primary"></span>
+                        <p class="text-base-content/60">Loading Dean's List data...</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    // Override the applyFilters function to show loading
+    const originalApplyFilters = applyFilters;
+    applyFilters = function() {
+        showLoadingState();
+        setTimeout(originalApplyFilters, 100); // Small delay to show loading
+    };
+});
+</script>
+
+{% endblock %}

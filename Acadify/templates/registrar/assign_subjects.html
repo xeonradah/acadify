@@ -1,0 +1,526 @@
+{% extends "common/base.html" %}
+
+{% block title %}Assign Subjects - Registrar{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-base-200/30">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-gradient-to-br from-success to-green-600 rounded-xl shadow-refined-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-base-content">Assign Subjects</h1>
+                        <p class="text-base-content/60">Assign curriculum-based subjects to student</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ url_for('enrollment_dashboard') }}" class="btn btn-outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9,22 9,12 15,12 15,22"/>
+                        </svg>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Information Card -->
+        <div class="card bg-base-100 shadow-refined-medium mb-6">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Student Information</h2>
+                
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="avatar placeholder">
+                        <div class="bg-neutral text-neutral-content rounded-full w-16">
+                            <span class="text-xl">{{ student.first_name[0] }}{{ student.last_name[0] }}</span>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold">{{ student.first_name }} {{ student.last_name }}</h3>
+                        {% if student.middle_name %}
+                        <p class="text-base-content/60">{{ student.middle_name }}</p>
+                        {% endif %}
+                        <div class="flex gap-4 mt-2">
+                            <span class="badge badge-outline">{{ student.student_id }}</span>
+                            <span class="badge badge-outline">{{ student.department }}</span>
+                            <span class="badge badge-success">{{ student.enrollment_status }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-semibold">Academic Year</span>
+                        </label>
+                        <p class="text-base-content">{{ current_enrollment.academic_year }}</p>
+                    </div>
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-semibold">Semester</span>
+                        </label>
+                        <p class="text-base-content">{{ current_enrollment.semester }}</p>
+                    </div>
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-semibold">Year Level</span>
+                        </label>
+                        <p class="text-base-content">{{ current_enrollment.year_level }}</p>
+                    </div>
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-semibold">Curriculum</span>
+                        </label>
+                        <p class="text-base-content">{{ current_enrollment.curriculum }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card bg-base-100 shadow-refined-medium mb-6">
+            <div class="card-body">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="p-2 bg-primary/10 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Filter Subjects</h2>
+                        <p class="text-sm opacity-60">Filter subjects by department, section, year level, and semester</p>
+                    </div>
+                </div>
+                
+                <form method="GET" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Department</span>
+                            </label>
+                            <select name="department" class="select select-bordered">
+                                <option value="">All Departments</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept }}" {% if department_filter and department_filter == dept %}selected{% endif %}>{{ dept }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Section</span>
+                            </label>
+                            <select name="section" class="select select-bordered">
+                                <option value="">All Sections</option>
+                                {% for section in sections %}
+                                <option value="{{ section }}" {% if section_filter and section_filter == section %}selected{% endif %}>{{ section }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Year Level</span>
+                            </label>
+                            <select name="year_level" class="select select-bordered">
+                                <option value="">All Year Levels</option>
+                                <option value="1" {% if year_level_filter and year_level_filter == '1' %}selected{% endif %}>1st Year</option>
+                                <option value="2" {% if year_level_filter and year_level_filter == '2' %}selected{% endif %}>2nd Year</option>
+                                <option value="3" {% if year_level_filter and year_level_filter == '3' %}selected{% endif %}>3rd Year</option>
+                                <option value="4" {% if year_level_filter and year_level_filter == '4' %}selected{% endif %}>4th Year</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Semester</span>
+                            </label>
+                            <select name="semester" class="select select-bordered">
+                                <option value="">All Semesters</option>
+                                <option value="1" {% if semester_filter and semester_filter == '1' %}selected{% endif %}>1st Semester</option>
+                                <option value="2" {% if semester_filter and semester_filter == '2' %}selected{% endif %}>2nd Semester</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+
+        <!-- Subject Assignment Form -->
+        <div class="card bg-base-100 shadow-refined-medium">
+            <div class="card-body">
+                {% if department_filter or section_filter or year_level_filter or semester_filter %}
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="card-title text-xl">Filtered Subjects</h2>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-base-content/60">Filtered by:</span>
+                        <div class="flex gap-2">
+                            {% if department_filter %}
+                            <span class="badge badge-primary">{{ department_filter }}</span>
+                            {% endif %}
+                            {% if section_filter %}
+                            <span class="badge badge-secondary">{{ section_filter }}</span>
+                            {% endif %}
+                            {% if year_level_filter %}
+                            <span class="badge badge-accent">{{ year_level_filter }}{% if year_level_filter == '1' %}st{% elif year_level_filter == '2' %}nd{% elif year_level_filter == '3' %}rd{% else %}th{% endif %} Year</span>
+                            {% endif %}
+                            {% if semester_filter %}
+                            <span class="badge badge-info">{{ semester_filter }}{% if semester_filter == '1' %}st{% else %}nd{% endif %} Semester</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if all_subjects %}
+                <form method="POST" action="{{ url_for('assign_subjects', student_id=student.id) }}" class="space-y-6">
+                    <div class="alert alert-info">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <h3 class="font-bold">Subject Selection</h3>
+                            <div class="text-sm">
+                                {% if department_filter or section_filter or year_level_filter or semester_filter %}
+                                    Select the subjects to assign to this student from the filtered subjects below.
+                                {% else %}
+                                    Select the subjects to assign to this student from all available subjects in the system.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for subject in all_subjects %}
+                        <div class="card bg-base-200">
+                            <div class="card-body p-4">
+                                <div class="form-control">
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" 
+                                               name="subject_ids[]" 
+                                               value="{{ subject.id }}" 
+                                               class="checkbox checkbox-primary"
+                                               {% if subject.id in assigned_subject_ids %}checked{% endif %}>
+                                        <div class="ml-3">
+                                            <div class="font-semibold">{{ subject.subject_code }}</div>
+                                            <div class="text-sm text-base-content/60">{{ subject.subject_name }}</div>
+                                            <div class="flex gap-2 mt-2">
+                                                <span class="badge badge-sm badge-outline">{{ subject.units }} units</span>
+                                                <span class="badge badge-sm badge-outline">{{ subject.department }}</span>
+                                                <span class="badge badge-sm badge-info">{{ subject.year_level }}{% if subject.year_level == 1 %}st{% elif subject.year_level == 2 %}nd{% elif subject.year_level == 3 %}rd{% else %}th{% endif %} Yr</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="card-actions justify-between mt-8">
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm text-base-content/60">
+                                <span id="selected-count">0</span> subjects selected
+                            </span>
+                            <button type="button" id="select-all-btn" class="btn btn-sm btn-outline">
+                                Select All
+                            </button>
+                            <button type="button" id="clear-all-btn" class="btn btn-sm btn-outline">
+                                Clear All
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="{{ url_for('enrollment_dashboard') }}" class="btn btn-outline">
+                                Cancel
+                            </a>
+                            <button type="submit" id="assign-btn" class="btn btn-success" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                                </svg>
+                                <span id="assign-btn-text">Assign Selected Subjects</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 mx-auto text-base-content/30 mb-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-base-content mb-4">No Subjects Available</h3>
+                    <p class="text-base-content/60 mb-6">No subjects have been created in the system yet.</p>
+                    <div class="alert alert-info mb-6 max-w-md mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <h4 class="font-bold">Need to add subjects?</h4>
+                            <div class="text-sm">Use the subject creation page to add new subjects to the system.</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 justify-center">
+                        <a href="{{ url_for('enrollment_dashboard') }}" class="btn btn-outline">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                <polyline points="9,22 9,12 15,12 15,22"/>
+                            </svg>
+                            Back to Dashboard
+                        </a>
+                        <a href="{{ url_for('registrar_subcreate') }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                            </svg>
+                            Create New Subject
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 mx-auto text-base-content/30 mb-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-base-content mb-4">No Subjects Available</h3>
+                    <p class="text-base-content/60 mb-6">No subjects have been created in the system yet.</p>
+                    <div class="alert alert-info mb-6 max-w-md mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <h4 class="font-bold">Need to add subjects?</h4>
+                            <div class="text-sm">Use the subject creation page to add new subjects to the system.</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 justify-center">
+                        <a href="{{ url_for('enrollment_dashboard') }}" class="btn btn-outline">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                <polyline points="9,22 9,12 15,12 15,22"/>
+                            </svg>
+                            Back to Dashboard
+                        </a>
+                        <a href="{{ url_for('registrar_subcreate') }}" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                            </svg>
+                            Create New Subject
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Currently Assigned Subjects -->
+        {% if assigned_subjects_list %}
+        <div class="card bg-base-100 shadow-refined-medium mt-6">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="card-title text-xl">Currently Assigned Subjects</h2>
+                    <div class="badge badge-success gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <path d="M22 4 12 14.01l-3-3"/>
+                        </svg>
+                        {{ assigned_subjects_list|length }} subject{{ 's' if assigned_subjects_list|length != 1 else '' }}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for subject in assigned_subjects_list %}
+                    <div class="card bg-success/10 border border-success/20 hover:shadow-md transition-all duration-200">
+                        <div class="card-body p-4">
+                            <div class="flex items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <path d="M22 4 12 14.01l-3-3"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-success">{{ subject.subject_code }}</div>
+                                    <div class="text-sm text-base-content/60">{{ subject.subject_name }}</div>
+                                    <div class="flex gap-2 mt-2">
+                                        <span class="badge badge-sm badge-outline">{{ subject.units }} units</span>
+                                        <span class="badge badge-sm badge-outline">{{ subject.department }}</span>
+                                        <span class="badge badge-sm badge-success">Assigned</span>
+                                    </div>
+                                    <div class="text-xs text-base-content/50 mt-2">
+                                        {{ subject.semester }}{% if subject.semester == 1 %}st{% else %}nd{% endif %} Semester, AY {{ subject.academic_year }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Auto-submit form when filters change
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.querySelector('form[method="GET"]');
+        const filterSelects = document.querySelectorAll('select[name="department"], select[name="section"], select[name="year_level"], select[name="semester"]');
+        
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                // Add a small delay to prevent rapid requests
+                setTimeout(() => {
+                    if (filterForm) {
+                        filterForm.submit();
+                    }
+                }, 100);
+            });
+        });
+    
+    // Subject selection functionality
+    const checkboxes = document.querySelectorAll('input[name="subject_ids[]"]');
+    const selectedCountSpan = document.getElementById('selected-count');
+    const assignBtn = document.getElementById('assign-btn');
+    const selectAllBtn = document.getElementById('select-all-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+    
+    // Debug logging (can be removed in production)
+    console.log('Initialization - Found checkboxes:', checkboxes.length);
+    console.log('Initialization - Button found:', !!assignBtn);
+    console.log('Initialization - Selected count span found:', !!selectedCountSpan);
+    
+    // Update selected count and button state
+    function updateSelectionState() {
+        const checkedBoxes = document.querySelectorAll('input[name="subject_ids[]"]:checked');
+        const count = checkedBoxes.length;
+        
+        if (selectedCountSpan) {
+            selectedCountSpan.textContent = count;
+        }
+        
+        // Enable/disable assign button
+        if (assignBtn) {
+            if (count > 0) {
+                assignBtn.disabled = false;
+                assignBtn.classList.remove('btn-disabled');
+            } else {
+                assignBtn.disabled = true;
+                assignBtn.classList.add('btn-disabled');
+            }
+        }
+        
+        // Update select all button text
+        if (selectAllBtn) {
+            if (count === checkboxes.length) {
+                selectAllBtn.textContent = 'Deselect All';
+            } else {
+                selectAllBtn.textContent = 'Select All';
+            }
+        }
+    }
+    
+    // Form validation function
+    function validateForm() {
+        const checkedBoxes = document.querySelectorAll('input[name="subject_ids[]"]:checked');
+        
+        if (checkedBoxes.length === 0) {
+            return {
+                isValid: false,
+                message: 'Please select at least one subject to assign.'
+            };
+        }
+        
+        return {
+            isValid: true,
+            message: ''
+        };
+    }
+    
+    // Add event listeners to checkboxes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectionState);
+    });
+    
+    // Select all functionality
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            const allChecked = document.querySelectorAll('input[name="subject_ids[]"]:checked').length === checkboxes.length;
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+            });
+            
+            updateSelectionState();
+        });
+    }
+    
+    // Clear all functionality
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            updateSelectionState();
+        });
+    }
+    
+    // Add loading state to assign button
+    if (assignBtn) {
+        assignBtn.addEventListener('click', function(e) {
+            // Get current checked boxes
+            const checkedBoxes = document.querySelectorAll('input[name="subject_ids[]"]:checked');
+            
+            // Simple validation
+            if (checkedBoxes.length === 0) {
+                alert('Please select at least one subject to assign.');
+                e.preventDefault();
+                return false;
+            }
+            
+            // Show confirmation dialog
+            const confirmMessage = `Are you sure you want to assign ${checkedBoxes.length} subject(s) to this student?`;
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Show loading state briefly
+            const btnText = document.getElementById('assign-btn-text');
+            if (btnText) {
+                btnText.innerHTML = '<span class="loading loading-spinner loading-sm"></span>Assigning...';
+            }
+            
+            // Let the form submit naturally
+        });
+    }
+    
+    // Initialize selection state
+    updateSelectionState();
+    
+    // Add error handling for missing elements
+    if (!assignBtn) {
+        console.error('Assign button not found!');
+    }
+    if (!selectedCountSpan) {
+        console.error('Selected count span not found!');
+    }
+    if (checkboxes.length === 0) {
+        console.warn('No subject checkboxes found!');
+    }
+});
+</script>
+
+{% endblock %}

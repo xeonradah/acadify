@@ -1,0 +1,1514 @@
+{% extends "common/base.html" %}
+
+{# UI only — do not change backend or existing JS logic. Preserve all IDs/names/HTMX endpoints #}
+
+{% block title %}MIS/IT Dashboard - Acadify{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-base-200/30" 
+     x-data="{ 
+        showWelcome: sessionStorage.getItem('welcomeDismissed') !== 'true',
+        showBackupModal: false,
+        backupInProgress: false,
+        showSystemReportModal: false,
+        reportLoading: false,
+        reportData: null,
+        reportError: null,
+        resourceData: null,
+        resourceInterval: null,
+        dismissWelcome() {
+            this.showWelcome = false;
+            sessionStorage.setItem('welcomeDismissed', 'true');
+        },
+        async init() {
+            // Start resource monitoring when component initializes
+            await this.startResourceMonitoring();
+        },
+        async startResourceMonitoring() {
+            // Fetch initial data
+            await this.fetchResourceData();
+            
+            // Set up interval for real-time updates (every 5 seconds)
+            this.resourceInterval = setInterval(async () => {
+                await this.fetchResourceData();
+            }, 5000);
+        },
+        async fetchResourceData() {
+            try {
+                const response = await fetch('/api/system-resources', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    this.resourceData = data.data;
+                } else {
+                    console.error('Failed to fetch resource data:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching resource data:', error);
+            }
+        },
+        stopResourceMonitoring() {
+            if (this.resourceInterval) {
+                clearInterval(this.resourceInterval);
+                this.resourceInterval = null;
+            }
+        }
+     }"
+     x-cloak>
+    
+    <!-- Main Container -->
+    <div class="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Header Section -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-neutral text-neutral-content flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                            class="w-6 h-6" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            stroke-width="2.5" 
+                            stroke-linecap="round" 
+                            stroke-linejoin="round">
+                            <rect width="7" height="9" x="3" y="3" rx="1"/>
+                            <rect width="7" height="5" x="14" y="3" rx="1"/>
+                            <rect width="7" height="9" x="14" y="12" rx="1"/>
+                            <rect width="7" height="5" x="3" y="16" rx="1"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-base-content tracking-tight">Control Center</h1>
+                        <p class="text-sm text-base-content/60 font-medium">System Administration</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Welcome Message -->
+            <div x-show="showWelcome"
+                 x-cloak
+                 style="display: none;"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform -translate-y-2"
+                 x-transition:enter-end="opacity-100 transform translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 transform translate-y-0"
+                 x-transition:leave-end="opacity-0 transform -translate-y-2"
+                 class="bg-base-100 border-l-4 border-neutral rounded-lg p-4 shadow-refined-light">
+                <div class="flex items-start gap-3">
+                    <div class="w-5 h-5 text-neutral flex-shrink-0 mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4"/>
+                            <path d="M12 8h.01"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-base-content text-sm">Welcome Back</h3>
+                        <p class="text-xs text-base-content/70 mt-1">All systems operational. Monitor health and manage users below.</p>
+                    </div>
+                    <button @click="dismissWelcome()" class="w-6 h-6 rounded-lg hover:bg-base-200 flex items-center justify-center text-base-content/60 hover:text-base-content transition-colors flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- Total Users -->
+            <div class="bg-base-100 rounded-xl p-5 border border-base-200 hover:border-base-300 transition-all group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-neutral/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-neutral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <span class="badge badge-sm badge-ghost">Total</span>
+                </div>
+                <div>
+                    <h3 class="text-3xl font-bold text-base-content mb-1">{{ total_users }}</h3>
+                    <p class="text-xs font-medium text-base-content/60 uppercase tracking-wide">Active Users</p>
+                </div>
+            </div>
+
+            <!-- Students -->
+            <div class="bg-base-100 rounded-xl p-5 border border-base-200 hover:border-base-300 transition-all group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    <span class="badge badge-sm badge-accent badge-outline">Enrolled</span>
+                </div>
+                <div>
+                    <h3 class="text-3xl font-bold text-base-content mb-1">{{ total_students }}</h3>
+                    <p class="text-xs font-medium text-base-content/60 uppercase tracking-wide">Students</p>
+                </div>
+            </div>
+
+            <!-- Instructors -->
+            <div class="bg-base-100 rounded-xl p-5 border border-base-200 hover:border-base-300 transition-all group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+                    <span class="badge badge-sm badge-primary badge-outline">Faculty</span>
+                </div>
+                <div>
+                    <h3 class="text-3xl font-bold text-base-content mb-1">{{ total_instructors }}</h3>
+                    <p class="text-xs font-medium text-base-content/60 uppercase tracking-wide">Instructors</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health & Resources -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- System Health Monitor -->
+            <div class="lg:col-span-2 bg-base-100 rounded-xl border border-base-200 overflow-hidden">
+                <div class="p-5 border-b border-base-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-neutral/10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-neutral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-base-content">System Health</h2>
+                            <p class="text-xs text-base-content/60">Live system monitoring</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <!-- Database Status -->
+                        <div class="bg-success/5 border border-success/20 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                                        <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4 class="text-sm font-semibold text-base-content">Database</h4>
+                                        <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                                    </div>
+                                    <p class="text-xs text-base-content/70" x-text="resourceData ? `MySQL - ${resourceData.system.database_size_mb} MB` : 'MySQL running normally'"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Application Server -->
+                        <div class="bg-success/5 border border-success/20 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="20" height="8" x="2" y="2" rx="2" ry="2"/>
+                                        <rect width="20" height="8" x="2" y="14" rx="2" ry="2"/>
+                                        <line x1="6" x2="6.01" y1="6" y2="6"/>
+                                        <line x1="6" x2="6.01" y1="18" y2="18"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4 class="text-sm font-semibold text-base-content">App Server</h4>
+                                        <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                                    </div>
+                                    <p class="text-xs text-base-content/70" x-text="resourceData ? `Flask - ${resourceData.system.processes} processes` : 'Flask responsive'"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Uptime -->
+                        <div class="bg-info/5 border border-info/20 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-info/10 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-sm font-semibold text-base-content mb-1">System Uptime</h4>
+                                    <p class="text-xs text-base-content/70" x-text="resourceData ? `${resourceData.system.uptime_hours} hours` : 'Calculating...'"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Memory Status -->
+                        <div class="rounded-lg p-4" 
+                             :class="resourceData ? (resourceData.memory.status === 'success' ? 'bg-success/5 border border-success/20' : resourceData.memory.status === 'warning' ? 'bg-warning/5 border border-warning/20' : 'bg-error/5 border border-error/20') : 'bg-neutral/5 border border-neutral/20'">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                                     :class="resourceData ? (resourceData.memory.status === 'success' ? 'bg-success/10' : resourceData.memory.status === 'warning' ? 'bg-warning/10' : 'bg-error/10') : 'bg-neutral/10'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
+                                         :class="resourceData ? (resourceData.memory.status === 'success' ? 'text-success' : resourceData.memory.status === 'warning' ? 'text-warning' : 'text-error') : 'text-neutral'" 
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 6h16M4 12h16M4 18h16"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4 class="text-sm font-semibold text-base-content">Memory</h4>
+                                        <span class="w-1.5 h-1.5 rounded-full animate-pulse"
+                                              :class="resourceData ? (resourceData.memory.status === 'success' ? 'bg-success' : resourceData.memory.status === 'warning' ? 'bg-warning' : 'bg-error') : 'bg-neutral'"></span>
+                                    </div>
+                                    <p class="text-xs text-base-content/70" x-text="resourceData ? `${resourceData.memory.percent}% (${resourceData.memory.status_text})` : 'Monitoring...'"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CPU Status -->
+                        <div class="rounded-lg p-4" 
+                             :class="resourceData ? (resourceData.cpu.status === 'success' ? 'bg-success/5 border border-success/20' : resourceData.cpu.status === 'warning' ? 'bg-warning/5 border border-warning/20' : 'bg-error/5 border border-error/20') : 'bg-neutral/5 border border-neutral/20'">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                                     :class="resourceData ? (resourceData.cpu.status === 'success' ? 'bg-success/10' : resourceData.cpu.status === 'warning' ? 'bg-warning/10' : 'bg-error/10') : 'bg-neutral/10'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
+                                         :class="resourceData ? (resourceData.cpu.status === 'success' ? 'text-success' : resourceData.cpu.status === 'warning' ? 'text-warning' : 'text-error') : 'text-neutral'" 
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="16" height="16" x="4" y="4" rx="2"/>
+                                        <rect width="6" height="6" x="9" y="9" rx="1"/>
+                                        <path d="M15 2v2"/>
+                                        <path d="M15 20v2"/>
+                                        <path d="M2 15h2"/>
+                                        <path d="M2 9h2"/>
+                                        <path d="M20 15h2"/>
+                                        <path d="M20 9h2"/>
+                                        <path d="M9 2v2"/>
+                                        <path d="M9 20v2"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4 class="text-sm font-semibold text-base-content">CPU</h4>
+                                        <span class="w-1.5 h-1.5 rounded-full animate-pulse"
+                                              :class="resourceData ? (resourceData.cpu.status === 'success' ? 'bg-success' : resourceData.cpu.status === 'warning' ? 'bg-warning' : 'bg-error') : 'bg-neutral'"></span>
+                                    </div>
+                                    <p class="text-xs text-base-content/70" x-text="resourceData ? `${resourceData.cpu.percent}% (${resourceData.cpu.status_text})` : 'Monitoring...'"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Storage Status -->
+                        <div class="rounded-lg p-4" 
+                             :class="resourceData ? (resourceData.storage.status === 'success' ? 'bg-success/5 border border-success/20' : resourceData.storage.status === 'warning' ? 'bg-warning/5 border border-warning/20' : 'bg-error/5 border border-error/20') : 'bg-neutral/5 border border-neutral/20'">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                                     :class="resourceData ? (resourceData.storage.status === 'success' ? 'bg-success/10' : resourceData.storage.status === 'warning' ? 'bg-warning/10' : 'bg-error/10') : 'bg-neutral/10'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
+                                         :class="resourceData ? (resourceData.storage.status === 'success' ? 'text-success' : resourceData.storage.status === 'warning' ? 'text-warning' : 'text-error') : 'text-neutral'" 
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                        <polyline points="3.29 7 12 12 20.71 7"/>
+                                        <line x1="12" x2="12" y1="22" y2="12"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4 class="text-sm font-semibold text-base-content">Storage</h4>
+                                        <span class="w-1.5 h-1.5 rounded-full animate-pulse"
+                                              :class="resourceData ? (resourceData.storage.status === 'success' ? 'bg-success' : resourceData.storage.status === 'warning' ? 'bg-warning' : 'bg-error') : 'bg-neutral'"></span>
+                                    </div>
+                                    <p class="text-xs text-base-content/70" x-text="resourceData ? `${resourceData.storage.percent}% (${resourceData.storage.status_text})` : 'Monitoring...'"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Usage -->
+            <div class="lg:col-span-1 bg-base-100 rounded-xl border border-base-200 overflow-hidden">
+                <div class="p-5 border-b border-base-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2v20M2 12h20"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-base-content">Resources</h2>
+                                <p class="text-xs text-base-content/60">Live performance metrics</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full" 
+                                 :class="resourceData ? 'bg-success animate-pulse' : 'bg-warning animate-pulse'"></div>
+                            <span class="text-xs text-base-content/60" x-text="resourceData ? 'Live' : 'Loading...'"></span>
+                            <button @click="fetchResourceData()" class="btn btn-xs btn-ghost">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                    <path d="M21 3v5h-5"/>
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                    <path d="M3 21v-5h5"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 space-y-5">
+                    <!-- Memory Usage -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" 
+                                     :class="resourceData ? (resourceData.memory.status === 'success' ? 'text-success' : resourceData.memory.status === 'warning' ? 'text-warning' : 'text-error') : 'text-neutral'" 
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 6h16M4 12h16M4 18h16"/>
+                                </svg>
+                                <span class="text-xs font-semibold text-base-content uppercase tracking-wide">Memory</span>
+                                <span class="text-xs text-base-content/60" 
+                                      x-text="resourceData ? `(${resourceData.memory.used_gb}GB / ${resourceData.memory.total_gb}GB)` : ''"></span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs font-bold" 
+                                      :class="resourceData ? (resourceData.memory.status === 'success' ? 'text-success' : resourceData.memory.status === 'warning' ? 'text-warning' : 'text-error') : 'text-neutral'"
+                                      x-text="resourceData ? `${resourceData.memory.percent}%` : '65%'"></span>
+                                <span class="text-xs text-base-content/60" 
+                                      x-text="resourceData ? resourceData.memory.status_text : ''"></span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-base-200 rounded-full h-1.5 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500" 
+                                 :class="resourceData ? (resourceData.memory.status === 'success' ? 'bg-success' : resourceData.memory.status === 'warning' ? 'bg-warning' : 'bg-error') : 'bg-neutral'"
+                                 :style="`width: ${resourceData ? resourceData.memory.percent : 65}%`"></div>
+                        </div>
+                    </div>
+
+                    <!-- CPU Load -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" 
+                                     :class="resourceData ? (resourceData.cpu.status === 'success' ? 'text-success' : resourceData.cpu.status === 'warning' ? 'text-warning' : 'text-error') : 'text-success'" 
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="16" height="16" x="4" y="4" rx="2"/>
+                                    <rect width="6" height="6" x="9" y="9" rx="1"/>
+                                    <path d="M15 2v2"/>
+                                    <path d="M15 20v2"/>
+                                    <path d="M2 15h2"/>
+                                    <path d="M2 9h2"/>
+                                    <path d="M20 15h2"/>
+                                    <path d="M20 9h2"/>
+                                    <path d="M9 2v2"/>
+                                    <path d="M9 20v2"/>
+                                </svg>
+                                <span class="text-xs font-semibold text-base-content uppercase tracking-wide">CPU</span>
+                                <span class="text-xs text-base-content/60" 
+                                      x-text="resourceData ? `(${resourceData.cpu.cores} cores)` : ''"></span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs font-bold" 
+                                      :class="resourceData ? (resourceData.cpu.status === 'success' ? 'text-success' : resourceData.cpu.status === 'warning' ? 'text-warning' : 'text-error') : 'text-success'"
+                                      x-text="resourceData ? `${resourceData.cpu.percent}%` : '45%'"></span>
+                                <span class="text-xs text-base-content/60" 
+                                      x-text="resourceData ? resourceData.cpu.status_text : ''"></span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-base-200 rounded-full h-1.5 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500" 
+                                 :class="resourceData ? (resourceData.cpu.status === 'success' ? 'bg-success' : resourceData.cpu.status === 'warning' ? 'bg-warning' : 'bg-error') : 'bg-success'"
+                                 :style="`width: ${resourceData ? resourceData.cpu.percent : 45}%`"></div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Space -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" 
+                                     :class="resourceData ? (resourceData.storage.status === 'success' ? 'text-success' : resourceData.storage.status === 'warning' ? 'text-warning' : 'text-error') : 'text-warning'" 
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                    <polyline points="3.29 7 12 12 20.71 7"/>
+                                    <line x1="12" x2="12" y1="22" y2="12"/>
+                                </svg>
+                                <span class="text-xs font-semibold text-base-content uppercase tracking-wide">Storage</span>
+                                <span class="text-xs text-base-content/60" 
+                                      x-text="resourceData ? `(${resourceData.storage.free_gb}GB free)` : ''"></span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs font-bold" 
+                                      :class="resourceData ? (resourceData.storage.status === 'success' ? 'text-success' : resourceData.storage.status === 'warning' ? 'text-warning' : 'text-error') : 'text-warning'"
+                                      x-text="resourceData ? `${resourceData.storage.percent}%` : '82%'"></span>
+                                <span class="text-xs text-base-content/60" 
+                                      x-text="resourceData ? resourceData.storage.status_text : ''"></span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-base-200 rounded-full h-1.5 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500" 
+                                 :class="resourceData ? (resourceData.storage.status === 'success' ? 'bg-success' : resourceData.storage.status === 'warning' ? 'bg-warning' : 'bg-error') : 'bg-warning'"
+                                 :style="`width: ${resourceData ? resourceData.storage.percent : 82}%`"></div>
+                        </div>
+                    </div>
+
+                    <!-- Additional System Info -->
+                    <div x-show="resourceData" class="pt-3 border-t border-base-200">
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="bg-base-200/50 rounded-lg p-2">
+                                <div class="text-base-content/70">Processes</div>
+                                <div class="font-semibold text-base-content" x-text="resourceData.system.processes"></div>
+                            </div>
+                            <div class="bg-base-200/50 rounded-lg p-2">
+                                <div class="text-base-content/70">Uptime</div>
+                                <div class="font-semibold text-base-content" x-text="`${resourceData.system.uptime_hours}h`"></div>
+                            </div>
+                            <div class="bg-base-200/50 rounded-lg p-2 col-span-2">
+                                <div class="text-base-content/70">Database Size</div>
+                                <div class="font-semibold text-base-content" x-text="`${resourceData.system.database_size_mb} MB`"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-base-100 rounded-xl border border-base-200 overflow-hidden">
+            <div class="p-5 border-b border-base-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-neutral/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-neutral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-base-content">Quick Actions</h2>
+                        <p class="text-xs text-base-content/60">Administrative tasks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- Create Account -->
+                    <a href="{{ url_for('create_account_page') }}" class="group bg-base-200/50 hover:bg-base-200 border border-base-300/50 hover:border-base-300 rounded-lg p-4 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-neutral text-neutral-content flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <line x1="19" x2="19" y1="8" y2="14"/>
+                                    <line x1="22" x2="16" y1="11" y2="11"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold text-base-content">Create Account</h3>
+                                <p class="text-xs text-base-content/60">Add new user</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Reset Password -->
+                    <a href="{{ url_for('reset_password_page') }}" class="group bg-base-200/50 hover:bg-base-200 border border-base-300/50 hover:border-base-300 rounded-lg p-4 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-primary text-primary-content flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold text-base-content">Reset Password</h3>
+                                <p class="text-xs text-base-content/60">User recovery</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Grade Schedule -->
+                    <a href="{{ url_for('grade_encoding_schedule') }}" class="group bg-base-200/50 hover:bg-base-200 border border-base-300/50 hover:border-base-300 rounded-lg p-4 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-warning text-warning-content flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                    <line x1="16" x2="16" y1="2" y2="6"/>
+                                    <line x1="8" x2="8" y1="2" y2="6"/>
+                                    <line x1="3" x2="21" y1="10" y2="10"/>
+                                    <path d="m9 16 2 2 4-4"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold text-base-content">Grade Schedule</h3>
+                                <p class="text-xs text-base-content/60">Set encoding dates</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Backup Database -->
+                    <button @click="showBackupModal = true" class="group bg-base-200/50 hover:bg-base-200 border border-base-300/50 hover:border-base-300 rounded-lg p-4 transition-all text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-success text-success-content flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" x2="12" y1="15" y2="3"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold text-base-content">Backup Data</h3>
+                                <p class="text-xs text-base-content/60">Save database</p>
+                            </div>
+                        </div>
+                    </button>
+
+                    <!-- System Report -->
+                    <button @click="showSystemReportModal = true" class="group bg-base-200/50 hover:bg-base-200 border border-base-300/50 hover:border-base-300 rounded-lg p-4 transition-all text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-info text-info-content flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" x2="8" y1="13" y2="13"/>
+                                    <line x1="16" x2="8" y1="17" y2="17"/>
+                                    <polyline points="10 9 9 9 8 9"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold text-base-content">System Report</h3>
+                                <p class="text-xs text-base-content/60">Generate analytics</p>
+                            </div>
+                        </div>
+                    </button>
+
+                    <!-- Audit Logs -->
+                    <a href="{{ url_for('audit_logs') }}" class="group bg-base-200/50 hover:bg-base-200 border border-base-300/50 hover:border-base-300 rounded-lg p-4 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-accent text-accent-content flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.3-4.3"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold text-base-content">Audit Logs</h3>
+                                <p class="text-xs text-base-content/60">View activity</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backup Database Modal -->
+        <div x-show="showBackupModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-base-content/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+             @click.self="showBackupModal = false"
+             style="display: none;">
+            <div x-show="showBackupModal"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 class="bg-base-100 rounded-2xl shadow-2xl max-w-md w-full">
+                
+                <!-- Modal Header -->
+                <div class="p-6 border-b border-base-300/50">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-success/10 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" x2="12" y1="15" y2="3"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-base-content">Database Backup</h3>
+                            <p class="text-sm text-base-content/60">Create a backup of the database</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6">
+                    <div class="bg-info/5 border border-info/20 rounded-lg p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-info flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="16" x2="12" y2="12"/>
+                                <line x1="12" y1="8" x2="12.01" y2="8"/>
+                            </svg>
+                            <div class="text-sm text-base-content/80">
+                                <p class="font-semibold mb-1">Backup Information:</p>
+                                <ul class="list-disc list-inside space-y-1 text-xs opacity-90">
+                                    <li>Complete database snapshot</li>
+                                    <li>Includes all tables and data</li>
+                                    <li>SQL format for easy restoration</li>
+                                    <li>Timestamped filename</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-base-content/80 mb-4 text-sm">
+                        This will create a complete backup of the database and download it to your computer. The backup file can be used to restore the database if needed.
+                    </p>
+
+                    <div class="bg-warning/5 border border-warning/20 rounded-lg p-3">
+                        <div class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-warning flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            <p class="text-xs text-base-content/70">Store the backup file securely. It contains sensitive information.</p>
+                        </div>
+                    </div>
+
+                    <div x-show="backupInProgress" class="mt-4 bg-success/5 border border-success/20 rounded-lg p-3" style="display: none;">
+                        <div class="flex items-center gap-3">
+                            <svg class="animate-spin w-5 h-5 text-success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-success">Creating backup...</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button @click="showBackupModal = false" 
+                                :disabled="backupInProgress"
+                                class="btn btn-ghost"
+                                :class="{ 'opacity-50 cursor-not-allowed': backupInProgress }">
+                            Cancel
+                        </button>
+                        <button @click="createBackup()" 
+                                :disabled="backupInProgress"
+                                class="btn btn-success text-white gap-2"
+                                :class="{ 'opacity-50 cursor-not-allowed': backupInProgress }">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" x2="12" y1="15" y2="3"/>
+                            </svg>
+                            Create Backup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Report Modal -->
+        <div x-show="showSystemReportModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-base-content/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+             @click.self="showSystemReportModal = false"
+             style="display: none;">
+            <div x-show="showSystemReportModal"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 class="bg-base-100 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+                
+                <!-- Modal Header -->
+                <div class="p-6 border-b border-base-300/50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2.5 bg-info/10 rounded-xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" x2="8" y1="13" y2="13"/>
+                                    <line x1="16" x2="8" y1="17" y2="17"/>
+                                    <polyline points="10 9 9 9 8 9"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-base-content">System Analytics Report</h3>
+                                <p class="text-sm text-base-content/60">Comprehensive system overview and metrics</p>
+                            </div>
+                        </div>
+                        <button @click="showSystemReportModal = false" class="btn btn-sm btn-ghost btn-circle">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                    <!-- Loading State -->
+                    <div x-show="reportLoading" class="flex items-center justify-center py-12" style="display: none;">
+                        <div class="flex items-center gap-3">
+                            <svg class="animate-spin w-6 h-6 text-info" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-lg font-medium text-info">Generating report...</span>
+                        </div>
+                    </div>
+
+                    <!-- Report Content -->
+                    <div x-show="!reportLoading && reportData" style="display: none;">
+                        <!-- Report Header -->
+                        <div class="bg-info/5 border border-info/20 rounded-lg p-4 mb-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-semibold text-base-content">Report Generated</h4>
+                                    <p class="text-sm text-base-content/70" x-text="reportData ? new Date(reportData.generated_at).toLocaleString() : ''"></p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-base-content" x-text="reportData ? reportData.period : ''"></p>
+                                    <button @click="downloadReport()" class="btn btn-sm btn-info mt-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="7 10 12 15 17 10"/>
+                                            <line x1="12" x2="12" y1="15" y2="3"/>
+                                        </svg>
+                                        Download PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Statistics -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            <!-- User Overview -->
+                            <div class="bg-base-100 border border-base-200 rounded-xl p-5">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-neutral/10 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-neutral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="9" cy="7" r="4"/>
+                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="font-bold text-base-content">User Statistics</h3>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Total Users</span>
+                                        <span class="font-semibold text-base-content" x-text="reportData ? reportData.user_statistics.total_users : 0"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Active Users</span>
+                                        <span class="font-semibold text-success" x-text="reportData ? reportData.user_statistics.active_users : 0"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Inactive Users</span>
+                                        <span class="font-semibold text-warning" x-text="reportData ? reportData.user_statistics.inactive_users : 0"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Role Distribution Chart -->
+                            <div class="bg-base-100 border border-base-200 rounded-xl p-5">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 2v20M2 12h20"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="font-bold text-base-content">Role Distribution</h3>
+                                </div>
+                                
+                                <div class="space-y-2" x-show="reportData && reportData.user_statistics.role_distribution">
+                                    <template x-for="[role, count] in Object.entries(reportData.user_statistics.role_distribution)" :key="role">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-3 h-3 rounded-full" 
+                                                     :class="{
+                                                         'bg-accent': role === 'student',
+                                                         'bg-primary': role === 'instructor', 
+                                                         'bg-secondary': role === 'registrar',
+                                                         'bg-success': role === 'dean',
+                                                         'bg-info': role === 'mis_it'
+                                                     }"></div>
+                                                <span class="text-sm text-base-content/70 capitalize" x-text="role.replace('_', ' ')"></span>
+                                            </div>
+                                            <span class="font-semibold text-base-content" x-text="count"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Academic Statistics -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                            <!-- Grade Distribution -->
+                            <div class="bg-base-100 border border-base-200 rounded-xl p-5">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="font-bold text-base-content">Grade Analysis</h3>
+                                </div>
+                                
+                                <div class="space-y-2" x-show="reportData && reportData.academic_statistics.grade_distribution">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Total Grades</span>
+                                        <span class="font-semibold text-base-content" x-text="reportData.academic_statistics.grade_distribution.total_grades"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Average Grade</span>
+                                        <span class="font-semibold text-success" x-text="reportData.academic_statistics.grade_distribution.average_grade"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Excellent (90+)</span>
+                                        <span class="font-semibold text-success" x-text="reportData.academic_statistics.grade_distribution.excellent"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Good (80-89)</span>
+                                        <span class="font-semibold text-info" x-text="reportData.academic_statistics.grade_distribution.good"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subject Information -->
+                            <div class="bg-base-100 border border-base-200 rounded-xl p-5">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                            <line x1="16" x2="16" y1="2" y2="6"/>
+                                            <line x1="8" x2="8" y1="2" y2="6"/>
+                                            <line x1="3" x2="21" y1="10" y2="10"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="font-bold text-base-content">Subjects</h3>
+                                </div>
+                                
+                                <div class="space-y-2" x-show="reportData && reportData.academic_statistics.subject_info">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Total Subjects</span>
+                                        <span class="font-semibold text-base-content" x-text="reportData.academic_statistics.subject_info.total_subjects"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Departments</span>
+                                        <span class="font-semibold text-warning" x-text="reportData.academic_statistics.subject_info.departments_with_subjects"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Class Assignments -->
+                            <div class="bg-base-100 border border-base-200 rounded-xl p-5">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="font-bold text-base-content">Class Assignments</h3>
+                                </div>
+                                
+                                <div class="space-y-2" x-show="reportData && reportData.academic_statistics.class_info">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Total Assignments</span>
+                                        <span class="font-semibold text-base-content" x-text="reportData.academic_statistics.class_info.total_assignments"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Active Instructors</span>
+                                        <span class="font-semibold text-accent" x-text="reportData.academic_statistics.class_info.instructors_with_classes"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-base-content/70">Assigned Subjects</span>
+                                        <span class="font-semibold text-accent" x-text="reportData.academic_statistics.class_info.subjects_with_assignments"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Health -->
+                        <div class="bg-base-100 border border-base-200 rounded-xl p-5 mb-6">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                                    </svg>
+                                </div>
+                                <h3 class="font-bold text-base-content">System Health</h3>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" x-show="reportData && reportData.system_health">
+                                <div class="bg-success/5 border border-success/20 rounded-lg p-3">
+                                    <div class="text-sm font-semibold text-base-content">Database Status</div>
+                                    <div class="text-xs text-success" x-text="reportData.system_health.database_status"></div>
+                                </div>
+                                <div class="bg-info/5 border border-info/20 rounded-lg p-3">
+                                    <div class="text-sm font-semibold text-base-content">Total Tables</div>
+                                    <div class="text-xs text-info" x-text="reportData.system_health.total_tables"></div>
+                                </div>
+                                <div class="bg-warning/5 border border-warning/20 rounded-lg p-3">
+                                    <div class="text-sm font-semibold text-base-content">System Uptime</div>
+                                    <div class="text-xs text-warning" x-text="reportData.system_health.uptime"></div>
+                                </div>
+                                <div class="bg-neutral/5 border border-neutral/20 rounded-lg p-3">
+                                    <div class="text-sm font-semibold text-base-content">Response Time</div>
+                                    <div class="text-xs text-neutral" x-text="reportData.system_health.response_time"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="bg-warning/5 border border-warning/20 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-warning flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                                <div>
+                                    <h4 class="font-semibold text-base-content mb-2">System Recommendations</h4>
+                                    <ul class="text-sm text-base-content/80 space-y-1" x-show="reportData && reportData.recommendations">
+                                        <template x-for="recommendation in reportData.recommendations" :key="recommendation">
+                                            <li class="flex items-start gap-2">
+                                                <span class="text-warning mt-1">•</span>
+                                                <span x-text="recommendation"></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error State -->
+                    <div x-show="!reportLoading && !reportData && reportError" class="text-center py-12" style="display: none;">
+                        <div class="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-base-content mb-2">Error Generating Report</h3>
+                        <p class="text-base-content/70 mb-4" x-text="reportError"></p>
+                        <button @click="generateReport()" class="btn btn-primary">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="p-6 border-t border-base-300/50 bg-base-200/30">
+                    <div class="flex justify-end gap-3">
+                        <button @click="showSystemReportModal = false" class="btn btn-ghost">
+                            Close
+                        </button>
+                        <button @click="generateReport()" 
+                                :disabled="reportLoading"
+                                class="btn btn-info text-white gap-2"
+                                :class="{ 'opacity-50 cursor-not-allowed': reportLoading }">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                <path d="M21 3v5h-5"/>
+                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                <path d="M3 21v-5h5"/>
+                            </svg>
+                            Refresh Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Account Modal -->
+        <div id="createAccountModal" class="modal" x-data="{ closing: false }">
+            <div class="modal-box max-w-2xl">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-neutral text-neutral-content flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <line x1="19" x2="19" y1="8" y2="14"/>
+                                <line x1="22" x2="16" y1="11" y2="11"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-base-content">Create New Account</h3>
+                            <p class="text-xs text-base-content/60">Add a new user to the system</p>
+                        </div>
+                    </div>
+                    <button onclick="closeCreateAccountModal()" class="btn btn-sm btn-ghost btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="createAccountForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- First Name -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">First Name</span>
+                            </label>
+                            <input type="text" name="first_name" required class="input input-bordered" />
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Last Name</span>
+                            </label>
+                            <input type="text" name="last_name" required class="input input-bordered" />
+                        </div>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Username</span>
+                        </label>
+                        <input type="text" name="username" required class="input input-bordered" />
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Email</span>
+                        </label>
+                        <input type="email" name="email" required class="input input-bordered" />
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Password</span>
+                        </label>
+                        <input type="password" name="password" required class="input input-bordered" />
+                    </div>
+
+                    <!-- Role Selection -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Role</span>
+                        </label>
+                        <select name="role" required onchange="toggleStudentFields(this.value)" class="select select-bordered">
+                            <option value="">Select Role</option>
+                            <option value="student">Student</option>
+                            <option value="instructor">Instructor</option>
+                            <option value="registrar">Registrar</option>
+                            <option value="dean">Dean</option>
+                            <option value="mis_it">MIS/IT</option>
+                        </select>
+                    </div>
+
+                    <!-- Student-specific fields (hidden by default) -->
+                    <div id="studentFields" class="hidden space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Student ID -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text font-semibold">Student ID</span>
+                                </label>
+                                <input type="text" name="student_id" class="input input-bordered" />
+                            </div>
+                            
+                            <!-- Year Level -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text font-semibold">Year Level</span>
+                                </label>
+                                <select name="year_level" class="select select-bordered">
+                                    <option value="">Select Year Level</option>
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Department -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text font-semibold">Department</span>
+                                </label>
+                                <select name="department" class="select select-bordered">
+                                    <option value="">Select Department</option>
+                                    <option value="BSCS">BSCS</option>
+                                    <option value="BEED">BEED</option>
+                                    <option value="BSHM">BSHM</option>
+                                    <option value="BSED">BSED</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Semester -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text font-semibold">Semester</span>
+                                </label>
+                                <select name="semester" class="select select-bordered">
+                                    <option value="">Select Semester</option>
+                                    <option value="1">1st Semester</option>
+                                    <option value="2">2nd Semester</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-action">
+                        <button type="button" onclick="closeCreateAccountModal()" class="btn btn-ghost">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-neutral">
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCreateAccountModal() {
+        document.getElementById('createAccountModal').classList.add('modal-open');
+    }
+
+    function closeCreateAccountModal() {
+        document.getElementById('createAccountModal').classList.remove('modal-open');
+        document.getElementById('createAccountForm').reset();
+    }
+
+    function toggleStudentFields(role) {
+        const studentFields = document.getElementById('studentFields');
+        const departmentField = document.querySelector('select[name="department"]').closest('div');
+        
+        // Handle student fields visibility
+        if (role === 'student') {
+            studentFields.classList.remove('hidden');
+            // Show all fields in student fields
+            studentFields.querySelectorAll('div').forEach(div => div.classList.remove('hidden'));
+        } else {
+            studentFields.classList.add('hidden');
+        }
+        
+        // Handle department field for instructors
+        if (role === 'instructor') {
+            // Move department field out of student fields and show it
+            departmentField.classList.remove('hidden');
+            studentFields.parentNode.insertBefore(departmentField, studentFields);
+        } else if (role !== 'student') {
+            // Hide department field for other roles
+            departmentField.classList.add('hidden');
+        }
+    }
+
+    document.getElementById('createAccountForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const role = formData.get('role');
+
+        // Handle student-specific fields
+        if (role !== 'student') {
+            // Remove student-specific fields if not a student
+            formData.delete('student_id');
+            formData.delete('year_level');
+            formData.delete('semester');
+        }
+
+        // Set department for instructors if selected
+        if (role === 'instructor') {
+            const department = formData.get('department');
+            if (!department) {
+                alert('Please select a department for the instructor');
+                return;
+            }
+        } else if (role !== 'student') {
+            // Remove department for non-student, non-instructor roles
+            formData.delete('department');
+        }
+
+        // Validate required fields
+        const requiredFields = ['username', 'email', 'password', 'role', 'first_name', 'last_name'];
+        for (const field of requiredFields) {
+            if (!formData.get(field)) {
+                alert(`Please fill in the ${field.replace('_', ' ')}`);
+                return;
+            }
+        }
+
+        try {
+            const response = await fetch('/create_account', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Account created successfully!');
+                closeCreateAccountModal();
+                location.reload();
+            } else {
+                alert(data.message || 'Error creating account');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while creating the account');
+        }
+    });
+
+    // Backup Database Function
+    async function createBackup() {
+        const scope = Alpine.$data(document.querySelector('[x-data]'));
+        scope.backupInProgress = true;
+
+        try {
+            const response = await fetch('/api/database-backup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                // Get the blob from response
+                const blob = await response.blob();
+                
+                // Create filename with timestamp
+                const now = new Date();
+                const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                const filename = `acadify_backup_${timestamp}.sql`;
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Show success message
+                setTimeout(() => {
+                    alert('✅ Backup created successfully!\\nFile: ' + filename);
+                    scope.showBackupModal = false;
+                    scope.backupInProgress = false;
+                }, 500);
+            } else {
+                const data = await response.json();
+                scope.backupInProgress = false;
+                alert('❌ Error: ' + (data.message || 'Failed to create backup'));
+            }
+        } catch (error) {
+            console.error('Backup error:', error);
+            scope.backupInProgress = false;
+            alert('❌ An error occurred while creating the backup');
+        }
+    }
+
+    // System Report Functions
+    async function generateReport() {
+        const scope = Alpine.$data(document.querySelector('[x-data]'));
+        scope.reportLoading = true;
+        scope.reportError = null;
+        scope.reportData = null;
+
+        try {
+            const response = await fetch('/api/system-report', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.status === 'success') {
+                scope.reportData = data.data;
+                scope.reportError = null;
+            } else {
+                scope.reportError = data.message || 'Failed to generate report';
+                scope.reportData = null;
+            }
+        } catch (error) {
+            console.error('Report generation error:', error);
+            scope.reportError = 'An error occurred while generating the report';
+            scope.reportData = null;
+        } finally {
+            scope.reportLoading = false;
+        }
+    }
+
+    function downloadReport() {
+        const scope = Alpine.$data(document.querySelector('[x-data]'));
+        
+        if (!scope.reportData) {
+            alert('No report data available to download');
+            return;
+        }
+
+        // Create a simple text report
+        const reportText = generateTextReport(scope.reportData);
+        
+        // Create filename with timestamp
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        const filename = `acadify_system_report_${timestamp}.txt`;
+        
+        // Create and download file
+        const blob = new Blob([reportText], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        alert('✅ Report downloaded successfully!\\nFile: ' + filename);
+    }
+
+    function generateTextReport(data) {
+        const report = [];
+        
+        report.push('ACADIFY SYSTEM REPORT');
+        report.push('='.repeat(50));
+        report.push(`Generated: ${new Date(data.generated_at).toLocaleString()}`);
+        report.push(`Period: ${data.period}`);
+        report.push('');
+        
+        // User Statistics
+        report.push('USER STATISTICS');
+        report.push('-'.repeat(30));
+        report.push(`Total Users: ${data.user_statistics.total_users}`);
+        report.push(`Active Users: ${data.user_statistics.active_users}`);
+        report.push(`Inactive Users: ${data.user_statistics.inactive_users}`);
+        report.push('');
+        
+        report.push('Role Distribution:');
+        Object.entries(data.user_statistics.role_distribution).forEach(([role, count]) => {
+            report.push(`  ${role.replace('_', ' ').toUpperCase()}: ${count}`);
+        });
+        report.push('');
+        
+        // Department Distribution
+        if (Object.keys(data.user_statistics.department_distribution).length > 0) {
+            report.push('Department Distribution:');
+            Object.entries(data.user_statistics.department_distribution).forEach(([dept, count]) => {
+                report.push(`  ${dept}: ${count}`);
+            });
+            report.push('');
+        }
+        
+        // Academic Statistics
+        report.push('ACADEMIC STATISTICS');
+        report.push('-'.repeat(30));
+        report.push(`Total Grades: ${data.academic_statistics.grade_distribution.total_grades}`);
+        report.push(`Average Grade: ${data.academic_statistics.grade_distribution.average_grade}`);
+        report.push(`Excellent (90+): ${data.academic_statistics.grade_distribution.excellent}`);
+        report.push(`Good (80-89): ${data.academic_statistics.grade_distribution.good}`);
+        report.push(`Satisfactory (70-79): ${data.academic_statistics.grade_distribution.satisfactory}`);
+        report.push(`Needs Improvement (<70): ${data.academic_statistics.grade_distribution.needs_improvement}`);
+        report.push('');
+        
+        report.push(`Total Subjects: ${data.academic_statistics.subject_info.total_subjects}`);
+        report.push(`Departments with Subjects: ${data.academic_statistics.subject_info.departments_with_subjects}`);
+        report.push('');
+        
+        report.push(`Total Class Assignments: ${data.academic_statistics.class_info.total_assignments}`);
+        report.push(`Instructors with Classes: ${data.academic_statistics.class_info.instructors_with_classes}`);
+        report.push(`Subjects with Assignments: ${data.academic_statistics.class_info.subjects_with_assignments}`);
+        report.push('');
+        
+        // System Health
+        report.push('SYSTEM HEALTH');
+        report.push('-'.repeat(30));
+        report.push(`Database Status: ${data.system_health.database_status}`);
+        report.push(`Total Tables: ${data.system_health.total_tables}`);
+        report.push(`System Uptime: ${data.system_health.uptime}`);
+        report.push(`Response Time: ${data.system_health.response_time}`);
+        report.push('');
+        
+        // Recommendations
+        report.push('RECOMMENDATIONS');
+        report.push('-'.repeat(30));
+        data.recommendations.forEach((rec, index) => {
+            report.push(`${index + 1}. ${rec}`);
+        });
+        report.push('');
+        
+        report.push('End of Report');
+        report.push('='.repeat(50));
+        
+        return report.join('\\n');
+    }
+
+
+    // Auto-generate report when modal opens
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('systemReport', () => ({
+            showSystemReportModal: false,
+            reportLoading: false,
+            reportData: null,
+            reportError: null,
+            
+            init() {
+                // Watch for modal opening
+                this.$watch('showSystemReportModal', (value) => {
+                    if (value && !this.reportData) {
+                        generateReport();
+                    }
+                });
+            }
+        }));
+    });
+
+    // Clean up intervals when page unloads
+    window.addEventListener('beforeunload', () => {
+        const scope = Alpine.$data(document.querySelector('[x-data]'));
+        if (scope && scope.stopResourceMonitoring) {
+            scope.stopResourceMonitoring();
+        }
+    });
+</script>
+{% endblock %}

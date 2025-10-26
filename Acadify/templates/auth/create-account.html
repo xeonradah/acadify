@@ -1,0 +1,354 @@
+{% extends "common/base.html" %}
+
+{% block title %}Create Staff Account - Acadify{% endblock %}
+
+{% block content %}
+<section class="min-h-screen py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-refined-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <line x1="19" x2="19" y1="8" y2="14"/>
+                        <line x1="22" x2="16" y1="11" y2="11"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-base-content">Create Staff Account</h1>
+                    <p class="text-base-content/60">Add a new staff member (Dean, Instructor, Registrar, MIS/IT)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="card bg-base-100 shadow-refined-medium">
+            <!-- Progress Steps -->
+            <div class="card-body p-6 border-b border-base-200">
+                <ul class="steps w-full">
+                    <li id="step1-indicator" class="step step-primary">Basic Info</li>
+                    <li id="step2-indicator" class="step">Role Details</li>
+                    <li id="step3-indicator" class="step">Review</li>
+                </ul>
+            </div>
+
+            <!-- Form Content -->
+            <form id="createAccountForm" class="card-body p-6" x-data>
+                <!-- Step 1: Basic Information -->
+                <div id="step1" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">First Name</span>
+                            </label>
+                            <input type="text" name="first_name" required class="input input-bordered">
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Last Name</span>
+                            </label>
+                            <input type="text" name="last_name" required class="input input-bordered">
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Middle Name</span>
+                                <span class="label-text-alt">Optional</span>
+                            </label>
+                            <input type="text" name="middle_name" class="input input-bordered">
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Suffix</span>
+                                <span class="label-text-alt">Optional</span>
+                            </label>
+                            <input type="text" name="suffix" class="input input-bordered" placeholder="Jr., Sr., III">
+                        </div>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Username</span>
+                        </label>
+                        <label class="input input-bordered flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <input type="text" name="username" required class="grow" />
+                        </label>
+                        <div class="label">
+                            <span class="label-text-alt">Username must be unique and contain only letters, numbers, and underscores</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Email Address</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                                    <path d="m22 7-10 5L2 7"/>
+                                </svg>
+                                <input type="email" name="email" required class="grow" />
+                            </label>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Password</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                                <input type="password" name="password" required class="grow" />
+                            </label>
+                            <div class="label">
+                                <span class="label-text-alt">Password must be at least 8 characters long and include a number and special character</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Role Information -->
+                <div id="step2" class="space-y-6 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">User Role</span>
+                            </label>
+                            <select name="role" required onchange="toggleDepartmentField(this.value)" class="select select-bordered">
+                                <option value="">Select Role</option>
+                                <option value="instructor">Instructor</option>
+                                <option value="registrar">Registrar</option>
+                                <option value="dean">Dean</option>
+                                <option value="mis_it">MIS/IT</option>
+                            </select>
+                        </div>
+                        <div id="departmentField" class="form-control hidden">
+                            <label class="label">
+                                <span class="label-text font-semibold">Department</span>
+                            </label>
+                            <select name="department" class="select select-bordered">
+                                <option value="">Select Department</option>
+                                <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
+                                <option value="BEED">BEED - Bachelor of Elementary Education</option>
+                                <option value="BSHM">BSHM - Bachelor of Science in Hospitality Management</option>
+                                <option value="BSED">BSED - Bachelor of Secondary Education</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Staff Contact Information -->
+                                    <div class="form-control">
+                                        <label class="label">
+                            <span class="label-text font-semibold">Mobile Number</span>
+                            <span class="label-text-alt">Optional</span>
+                                        </label>
+                        <input type="tel" name="mobile_no" class="input input-bordered" placeholder="09XXXXXXXXX" />
+                    </div>
+                </div>
+
+                <!-- Step 3: Review Information -->
+                <div id="step3" class="space-y-6 hidden">
+                    <div class="alert alert-info">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <h3 class="font-bold">Review Account Information</h3>
+                            <div class="text-xs">Please verify all information before creating the account.</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="card bg-base-200">
+                            <div class="card-body">
+                                <h4 class="card-title text-base">Account Details</h4>
+                                <div class="space-y-2 text-sm">
+                                    <p><span class="font-medium">Full Name:</span> <span id="review-fullname" class="text-base-content/80"></span></p>
+                                    <p><span class="font-medium">Username:</span> <span id="review-username" class="text-base-content/80"></span></p>
+                                    <p><span class="font-medium">Email:</span> <span id="review-email" class="text-base-content/80"></span></p>
+                                    <p><span class="font-medium">Role:</span> <span id="review-role" class="text-base-content/80"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card bg-base-200">
+                            <div class="card-body">
+                                <h4 class="card-title text-base">Staff Information</h4>
+                                <div class="space-y-2 text-sm">
+                                    <p><span class="font-medium">Department:</span> <span id="review-department" class="text-base-content/80"></span></p>
+                                    <p><span class="font-medium">Mobile No.:</span> <span id="review-mobile-no" class="text-base-content/80"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="card-actions justify-between mt-8">
+                    <button type="button" id="prevBtn" onclick="navigateStep(-1)" class="btn btn-ghost hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                        Previous
+                    </button>
+                    <button type="button" id="nextBtn" onclick="navigateStep(1)" class="btn btn-primary">
+                        Next
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </button>
+                    <button type="submit" id="submitBtn" class="btn btn-success hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                        Create Account
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Back to Dashboard Link -->
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('misit_dashboard') }}" class="btn btn-ghost btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+</section>
+
+<script>
+let currentStep = 1;
+const totalSteps = 3;
+
+function navigateStep(direction) {
+    const newStep = currentStep + direction;
+    if (newStep < 1 || newStep > totalSteps) return;
+
+    // Validate current step before proceeding
+    if (direction > 0 && !validateStep(currentStep)) return;
+
+    // Update step visibility
+    const currentStepElement = document.getElementById(`step${currentStep}`);
+    const newStepElement = document.getElementById(`step${newStep}`);
+    
+    currentStepElement.classList.add('hidden');
+    newStepElement.classList.remove('hidden');
+
+    // Update progress indicators for DaisyUI steps
+    document.getElementById(`step${currentStep}-indicator`).classList.remove('step-primary');
+    document.getElementById(`step${newStep}-indicator`).classList.add('step-primary');
+
+    // Update buttons
+    currentStep = newStep;
+    updateNavigationButtons();
+
+    // If moving to review step, update review information
+    if (currentStep === 3) {
+        updateReviewInformation();
+    }
+}
+
+function validateStep(step) {
+    const requiredFields = {
+        1: ['first_name', 'last_name', 'username', 'email', 'password'],
+        2: ['role']
+    };
+
+    if (!requiredFields[step]) return true;
+
+    const fields = requiredFields[step];
+    const isValid = fields.every(field => {
+        const input = document.querySelector(`[name="${field}"]`);
+        return input && input.value.trim() !== '';
+    });
+
+    if (!isValid) {
+        alert('Please fill in all required fields before proceeding.');
+        return false;
+    }
+
+    return true;
+}
+
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Show/hide Previous button
+    prevBtn.classList.toggle('hidden', currentStep === 1);
+
+    // Show/hide Next button
+    nextBtn.classList.toggle('hidden', currentStep === totalSteps);
+
+    // Show/hide Submit button
+    submitBtn.classList.toggle('hidden', currentStep !== totalSteps);
+}
+
+function toggleDepartmentField(role) {
+    const departmentField = document.getElementById('departmentField');
+    const departmentSelect = departmentField.querySelector('select[name="department"]');
+
+    // Reset department field
+    departmentSelect.value = '';
+    departmentSelect.required = false;
+
+    if (role === 'instructor') {
+        // For instructors, show and require department
+        departmentField.classList.remove('hidden');
+        departmentSelect.required = true;
+    } else {
+        // For other staff roles, hide department field
+        departmentField.classList.add('hidden');
+    }
+}
+
+function updateReviewInformation() {
+    const form = document.getElementById('createAccountForm');
+    const formData = new FormData(form);
+
+    const middleName = formData.get('middle_name') ? ` ${formData.get('middle_name')}` : '';
+    const suffix = formData.get('suffix') ? ` ${formData.get('suffix')}` : '';
+    document.getElementById('review-fullname').textContent = `${formData.get('first_name')}${middleName} ${formData.get('last_name')}${suffix}`.trim();
+    document.getElementById('review-username').textContent = formData.get('username');
+    document.getElementById('review-email').textContent = formData.get('email');
+    document.getElementById('review-role').textContent = formData.get('role');
+    document.getElementById('review-department').textContent = formData.get('department') || 'N/A';
+    document.getElementById('review-mobile-no').textContent = formData.get('mobile_no') || 'N/A';
+}
+
+document.getElementById('createAccountForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('/create_account', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Account created successfully!');
+            window.location.href = '{{ url_for("misit_dashboard") }}';
+        } else {
+            alert(data.message || 'Error creating account');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while creating the account');
+    }
+});
+</script>
+{% endblock %}
