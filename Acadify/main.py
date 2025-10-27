@@ -29,11 +29,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'acadify-secret-key-2025')
 
 # Database Configuration - Use environment variables for security
-DB_HOST = os.environ.get('MYSQL_HOST', 'localhost')
+DB_HOST = os.environ.get('MYSQL_HOST', 'mathtry-db.c9aqi8mg6z1y.ap-southeast-2.rds.amazonaws.com')
 DB_PORT = os.environ.get('MYSQL_PORT', '3306')
-DB_USERNAME = os.environ.get('MYSQL_USERNAME', 'root')
-DB_PASSWORD = os.environ.get('MYSQL_PASSWORD', '102503')  # Default for development only
-DB_NAME = os.environ.get('MYSQL_DATABASE', 'acadify_main')
+DB_USERNAME = os.environ.get('MYSQL_USERNAME', 'admin')
+DB_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'mathtry123')  # Default for development only
+DB_NAME = os.environ.get('MYSQL_DATABASE', 'acadify')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
